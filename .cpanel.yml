@@ -1,6 +1,5 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/paniimibakery/paniimi_app
-    - /usr/bin/rsync -a --exclude='.git' --exclude='.env' ./ $DEPLOYPATH/
-    - touch $DEPLOYPATH/tmp/restart.txt
+    - rsync -a --exclude='.git' --exclude='.env' ./ /home/paniimibakery/paniimi_app/
+    - touch /home/paniimibakery/paniimi_app/tmp/restart.txt
