@@ -1,0 +1,164 @@
+{% extends "panel_admin/admin_base.html" %}
+{% load static %}
+
+{% block title %}Estaciones (Vestimenta de la Página){% endblock %}
+{% block page_title %}Vestimenta & Estaciones{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto animate-fade-in-up">
+    <!-- Encabezado editorial -->
+    <div class="mb-10 border-b border-zinc-200 pb-6">
+        <p class="text-xs font-semibold tracking-[0.2em] uppercase text-accent-muted mb-2">Visuales & Apariencia</p>
+        <h2 class="font-serif text-3xl font-bold text-primary mb-3">Estaciones del Año</h2>
+        <p class="text-sm text-secondary leading-relaxed max-w-2xl">
+            Cambia la vestimenta visual completa de Paniimi Bakery con un solo clic. 
+            Al seleccionar una estación, se redefinirán dinámicamente los colores principales, los textos poéticos del Hero y las hermosas ilustraciones de ositos en toda la tienda de manera inmediata.
+        </p>
+    </div>
+
+    <!-- Grid de Estaciones -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+
+        <!-- ORIGINAL -->
+        <div class="border {% if temporada_actual == 'original' %}border-black shadow-md{% else %}border-zinc-200 hover:border-zinc-400{% endif %} bg-white p-6 flex flex-col justify-between transition-all duration-300">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-serif text-xl font-bold text-zinc-900">Original</h3>
+                    {% if temporada_actual == 'original' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-black text-white uppercase tracking-wider">Activo</span>
+                    {% endif %}
+                </div>
+                <p class="text-xs text-zinc-500 mb-6 leading-relaxed">
+                    El diseño minimalista clásico de Paniimi. Alta costura editorial en negro puro, grises sobrios y espacios blancos perfectos.
+                </p>
+                <!-- Preview de Colores -->
+                <div class="flex gap-2 mb-8">
+                    <div class="w-8 h-8 rounded-full bg-black border border-zinc-200 shadow-sm" title="Primario: Negro"></div>
+                    <div class="w-8 h-8 rounded-full bg-zinc-600 border border-zinc-200 shadow-sm" title="Secundario: Gris"></div>
+                    <div class="w-8 h-8 rounded-full bg-zinc-50 border border-zinc-200 shadow-sm" title="Neutro: Gris claro"></div>
+                </div>
+            </div>
+            <form method="POST" action="{% url 'panel_admin:estaciones' %}">
+                {% csrf_token %}
+                <input type="hidden" name="temporada" value="original">
+                <button type="submit" class="w-full btn-admin text-center {% if temporada_actual == 'original' %}opacity-50 pointer-events-none{% endif %}">
+                    Activar Original
+                </button>
+            </form>
+        </div>
+
+        <!-- PRIMAVERA -->
+        <div class="border {% if temporada_actual == 'primavera' %}border-[#4A6B53] shadow-md{% else %}border-zinc-200 hover:border-[#4A6B53]/50{% endif %} bg-white p-6 flex flex-col justify-between transition-all duration-300">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-serif text-xl font-bold text-[#4A6B53]">Primavera 🌸</h3>
+                    {% if temporada_actual == 'primavera' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#4A6B53] text-white uppercase tracking-wider">Activo</span>
+                    {% endif %}
+                </div>
+                <p class="text-xs text-zinc-500 mb-6 leading-relaxed">
+                    El florecer de los sabores. Tonalidades verde sabio / salvia suave que evocan frescura, naturaleza y renacimiento floral.
+                </p>
+                <!-- Preview de Colores -->
+                <div class="flex gap-2 mb-8">
+                    <div class="w-8 h-8 rounded-full bg-[#4A6B53] border border-zinc-200 shadow-sm" title="Primario: Verde Salvia"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#6B7C70] border border-zinc-200 shadow-sm" title="Secundario: Verde Musgo"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#F4F6F4] border border-zinc-200 shadow-sm" title="Neutro: Fondo Suave"></div>
+                </div>
+            </div>
+            <form method="POST" action="{% url 'panel_admin:estaciones' %}">
+                {% csrf_token %}
+                <input type="hidden" name="temporada" value="primavera">
+                <button type="submit" class="w-full btn-admin text-center border-[#4A6B53] {% if temporada_actual == 'primavera' %}opacity-50 pointer-events-none{% else %}bg-[#4A6B53] hover:bg-[#4A6B53]/90{% endif %}">
+                    Activar Primavera
+                </button>
+            </form>
+        </div>
+
+        <!-- VERANO -->
+        <div class="border {% if temporada_actual == 'verano' %}border-[#8C4730] shadow-md{% else %}border-zinc-200 hover:border-[#8C4730]/50{% endif %} bg-white p-6 flex flex-col justify-between transition-all duration-300">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-serif text-xl font-bold text-[#8C4730]">Verano ☀️</h3>
+                    {% if temporada_actual == 'verano' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#8C4730] text-white uppercase tracking-wider">Activo</span>
+                    {% endif %}
+                </div>
+                <p class="text-xs text-zinc-500 mb-6 leading-relaxed">
+                    Sol radiante y calidez. Un elegante terracota tostado inspirado en la arcilla caliente, atardeceres dorados y la dulzura soleada.
+                </p>
+                <!-- Preview de Colores -->
+                <div class="flex gap-2 mb-8">
+                    <div class="w-8 h-8 rounded-full bg-[#8C4730] border border-zinc-200 shadow-sm" title="Primario: Terracota"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#A36A58] border border-zinc-200 shadow-sm" title="Secundario: Arena"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#FAF8F6] border border-zinc-200 shadow-sm" title="Neutro: Fondo Cálido"></div>
+                </div>
+            </div>
+            <form method="POST" action="{% url 'panel_admin:estaciones' %}">
+                {% csrf_token %}
+                <input type="hidden" name="temporada" value="verano">
+                <button type="submit" class="w-full btn-admin text-center border-[#8C4730] {% if temporada_actual == 'verano' %}opacity-50 pointer-events-none{% else %}bg-[#8C4730] hover:bg-[#8C4730]/90{% endif %}">
+                    Activar Verano
+                </button>
+            </form>
+        </div>
+
+        <!-- OTOÑO -->
+        <div class="border {% if temporada_actual == 'otono' %}border-[#5A2A27] shadow-md{% else %}border-zinc-200 hover:border-[#5A2A27]/50{% endif %} bg-white p-6 flex flex-col justify-between transition-all duration-300">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-serif text-xl font-bold text-[#5A2A27]">Otoño 🍂</h3>
+                    {% if temporada_actual == 'otono' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#5A2A27] text-white uppercase tracking-wider">Activo</span>
+                    {% endif %}
+                </div>
+                <p class="text-xs text-zinc-500 mb-6 leading-relaxed">
+                    El aroma de las hojas secas. Un borgoña profundo y majestuoso que evoca la calidez de una tarde de café y galletas horneadas.
+                </p>
+                <!-- Preview de Colores -->
+                <div class="flex gap-2 mb-8">
+                    <div class="w-8 h-8 rounded-full bg-[#5A2A27] border border-zinc-200 shadow-sm" title="Primario: Borgoña"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#7F5552] border border-zinc-200 shadow-sm" title="Secundario: Madera"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#FAF4F4] border border-zinc-200 shadow-sm" title="Neutro: Crema Suave"></div>
+                </div>
+            </div>
+            <form method="POST" action="{% url 'panel_admin:estaciones' %}">
+                {% csrf_token %}
+                <input type="hidden" name="temporada" value="otono">
+                <button type="submit" class="w-full btn-admin text-center border-[#5A2A27] {% if temporada_actual == 'otono' %}opacity-50 pointer-events-none{% else %}bg-[#5A2A27] hover:bg-[#5A2A27]/90{% endif %}">
+                    Activar Otoño
+                </button>
+            </form>
+        </div>
+
+        <!-- INVIERNO -->
+        <div class="border {% if temporada_actual == 'invierno' %}border-[#1C333E] shadow-md{% else %}border-zinc-200 hover:border-[#1C333E]/50{% endif %} bg-white p-6 flex flex-col justify-between transition-all duration-300">
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-serif text-xl font-bold text-[#1C333E]">Invierno ❄️</h3>
+                    {% if temporada_actual == 'invierno' %}
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#1C333E] text-white uppercase tracking-wider">Activo</span>
+                    {% endif %}
+                </div>
+                <p class="text-xs text-zinc-500 mb-6 leading-relaxed">
+                    Acogedor y festivo. Un azul pizarra nórdico profundo e invernal que combina el frío polar con el calor del cacao hogareño.
+                </p>
+                <!-- Preview de Colores -->
+                <div class="flex gap-2 mb-8">
+                    <div class="w-8 h-8 rounded-full bg-[#1C333E] border border-zinc-200 shadow-sm" title="Primario: Azul Pizarra"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#435A66] border border-zinc-200 shadow-sm" title="Secundario: Pino"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#F2F5F7] border border-zinc-200 shadow-sm" title="Neutro: Blanco Frío"></div>
+                </div>
+            </div>
+            <form method="POST" action="{% url 'panel_admin:estaciones' %}">
+                {% csrf_token %}
+                <input type="hidden" name="temporada" value="invierno">
+                <button type="submit" class="w-full btn-admin text-center border-[#1C333E] {% if temporada_actual == 'invierno' %}opacity-50 pointer-events-none{% else %}bg-[#1C333E] hover:bg-[#1C333E]/90{% endif %}">
+                    Activar Invierno
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

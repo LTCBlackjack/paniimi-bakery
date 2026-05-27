@@ -18,6 +18,147 @@
         transition: background .15s, color .15s;
     }
     .qty-btn:hover { background: #000; color: #fff; }
+
+    /* ── Panel de pago deslizable ───────────────────────────── */
+    #payment-panel {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: flex;
+        align-items: flex-end;          /* panel sale desde abajo en móvil */
+        justify-content: flex-end;
+        visibility: hidden;
+        pointer-events: none;
+    }
+    #payment-panel.open {
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    /* Overlay oscuro */
+    #panel-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0);
+        transition: background .35s ease;
+    }
+    #payment-panel.open #panel-overlay {
+        background: rgba(0,0,0,0.45);
+    }
+
+    /* Cajón lateral */
+    #panel-drawer {
+        position: relative;
+        background: #fff;
+        width: 100%;
+        max-width: 480px;
+        height: 100dvh;
+        overflow-y: auto;
+        transform: translateX(100%);
+        transition: transform .4s cubic-bezier(0.22,1,0.36,1);
+        padding: 2.5rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    #payment-panel.open #panel-drawer {
+        transform: translateX(0);
+    }
+
+    /* Stripe Element */
+    #card-element {
+        border: 1px solid #e5e7eb;
+        padding: 14px 12px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        transition: border-color .2s;
+    }
+    #card-element.StripeElement--focus {
+        border-color: #000;
+        outline: none;
+    }
+    #card-element.StripeElement--invalid {
+        border-color: #e53e3e;
+    }
+    #card-errors {
+        color: #e53e3e;
+        font-size: 12px;
+        font-family: 'Inter', sans-serif;
+        min-height: 18px;
+    }
+
+    /* Botón pagar dentro del panel */
+    #btn-pagar {
+        width: 100%;
+        background: #000;
+        color: #fff;
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: .25em;
+        text-transform: uppercase;
+        padding: 16px 0;
+        border: none;
+        cursor: pointer;
+        transition: opacity .2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    #btn-pagar:hover  { opacity: .8; }
+    #btn-pagar:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* Spinner dentro del botón */
+    .btn-spinner {
+        width: 14px; height: 14px;
+        border: 2px solid rgba(255,255,255,.4);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin .7s linear infinite;
+        display: none;
+    }
+    #btn-pagar.loading .btn-spinner { display: block; }
+    #btn-pagar.loading .btn-label   { display: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Campos del formulario de dirección */
+    .field-input {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        padding: 10px 12px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #000;
+        background: #fff;
+        outline: none;
+        transition: border-color .2s;
+    }
+    .field-input:focus { border-color: #000; }
+    .field-input::placeholder { color: #9ca3af; }
+
+    /* ── Pantalla de Estado de Checkout (Loading/Éxito/Error) ── */
+    #checkout-status-screen {
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+        transform: scale(0.96);
+        pointer-events: none;
+    }
+    #checkout-status-screen.open {
+        display: flex !important;
+        opacity: 1;
+        transform: scale(1);
+        pointer-events: auto;
+    }
+    
+    @keyframes scaleUp {
+        0% { transform: scale(0.6); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-scale-up {
+        animation: scaleUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
 </style>
 {% endblock %}
 
@@ -192,14 +333,34 @@
                         </span>
                     </div>
 
-                    <!-- Botón de pago -->
-                    <button id="btn-checkout"
-                            class="w-full bg-primary text-white font-sans text-xs font-semibold
-                                   tracking-[.25em] uppercase py-4
-                                   hover:opacity-80 active:opacity-100
-                                   transition-opacity duration-200">
-                        Proceder al Pago Seguro
-                    </button>
+                    <!-- ── Botón de pago ───────────────────────────────
+                         * Usuario autenticado   → abre el panel de Stripe
+                         * Usuario NO autenticado → redirige a login/?next=/carrito/
+                    ─────────────────────────────────────────────────── -->
+                    {% if user.is_authenticated %}
+                        <button id="btn-checkout"
+                                class="w-full bg-primary text-white font-sans text-xs font-semibold
+                                       tracking-[.25em] uppercase py-4
+                                       hover:opacity-80 active:opacity-100
+                                       transition-opacity duration-200">
+                            Proceder al Pago Seguro
+                        </button>
+                    {% else %}
+                        <a href="{% url 'login' %}?next={% url 'ver_carrito' %}"
+                           id="btn-checkout"
+                           class="block w-full bg-primary text-white font-sans text-xs font-semibold
+                                  tracking-[.25em] uppercase py-4 text-center
+                                  hover:opacity-80 transition-opacity duration-200">
+                            Iniciar Sesión para Pagar
+                        </a>
+                        <p class="font-sans text-[10px] text-secondary/50 mt-3 text-center leading-relaxed">
+                            Necesitas una cuenta para completar tu pedido.
+                            <a href="{% url 'registro' %}?next={% url 'ver_carrito' %}"
+                               class="underline hover:text-primary transition-colors">
+                                ¿No tienes cuenta? Regístrate gratis.
+                            </a>
+                        </p>
+                    {% endif %}
 
                     <!-- Nota de seguridad -->
                     <p class="font-sans text-[10px] text-secondary/30 mt-3 text-center tracking-wide">
@@ -235,16 +396,483 @@
     </div>
 </section>
 
-<!-- Stripe JS — solo se carga si hay items y hay public key -->
-{% if items and stripe_public_key %}
+
+<!-- ═══════════════════════════════════════════════════════════════
+     PANEL DESLIZABLE DE PAGO CON STRIPE ELEMENTS
+     Solo se monta si el usuario está autenticado y hay items
+     ═══════════════════════════════════════════════════════════ -->
+{% if items and user.is_authenticated %}
+
+<!-- Panel overlay + drawer -->
+<div id="payment-panel" role="dialog" aria-modal="true" aria-label="Pago seguro">
+
+    <!-- Click fuera cierra el panel -->
+    <div id="panel-overlay" onclick="closePaymentPanel()"></div>
+
+    <!-- Cajón lateral -->
+    <div id="panel-drawer">
+
+        <!-- Cabecera del panel -->
+        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+            <div>
+                <p class="font-sans text-[10px] font-semibold tracking-[.3em] uppercase text-secondary/40 mb-1">
+                    Pago Seguro
+                </p>
+                <p class="font-serif text-xl font-bold text-primary">
+                    Total: <span class="italic font-normal">${{ total }}</span>
+                </p>
+            </div>
+            <button onclick="closePaymentPanel()"
+                    aria-label="Cerrar panel de pago"
+                    class="text-secondary/40 hover:text-primary transition-colors text-2xl leading-none font-light">
+                ×
+            </button>
+        </div>
+
+        {% if stripe_public_key %}
+        <!-- ── Formulario completo: dirección + tarjeta ── -->
+        <form id="payment-form" novalidate>
+            {% csrf_token %}
+
+            <!-- ─── Sección 1: Dirección de entrega ───────────────── -->
+            <p class="font-sans text-[10px] font-semibold tracking-[.3em] uppercase text-secondary/40 mb-3">
+                Dirección de Entrega
+            </p>
+
+            {% if direcciones_guardadas %}
+            <div class="flex flex-col gap-1 mb-4 bg-neutral p-4 rounded-editorial-sm">
+                <label for="selector-direcciones" class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                    Dirección Guardada
+                </label>
+                <select id="selector-direcciones" class="field-input">
+                    <option value="">-- Usar una nueva dirección --</option>
+                    {% for dir in direcciones_guardadas %}
+                    <option value="{{ dir.pk }}" 
+                            data-telefono="{{ dir.telefono }}"
+                            data-calle="{{ dir.calle }}"
+                            data-colonia="{{ dir.colonia }}"
+                            data-cp="{{ dir.codigo_postal }}"
+                            data-ciudad="{{ dir.ciudad }}"
+                            data-estado="{{ dir.estado_mx }}"
+                            data-refs="{{ dir.referencias }}"
+                            {% if dir.predetermina %}selected{% endif %}>
+                        {{ dir.alias }} ({% if dir.predetermina %}Favorita, {% endif %}{{ dir.calle }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+
+            <div class="flex flex-col gap-1">
+                <label for="dir-telefono" class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                    Teléfono de contacto
+                </label>
+                <input id="dir-telefono" name="telefono" type="tel" autocomplete="tel"
+                       placeholder="999 123 4567" required
+                       class="field-input">
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label for="dir-calle" class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                    Calle y número
+                </label>
+                <input id="dir-calle" name="calle" type="text" autocomplete="street-address"
+                       placeholder="Calle 60 #123" required
+                       class="field-input">
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1">
+                    <label for="dir-colonia" class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                        Colonia
+                    </label>
+                    <input id="dir-colonia" name="colonia" type="text"
+                           placeholder="Centro" required
+                           class="field-input">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="dir-cp" class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                        C.P.
+                    </label>
+                    <input id="dir-cp" name="codigo_postal" type="text" inputmode="numeric"
+                           placeholder="97000" required
+                           class="field-input">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div class="flex flex-col gap-1">
+                    <label for="dir-ciudad" class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                        Ciudad
+                    </label>
+                    <input id="dir-ciudad" name="ciudad" type="text"
+                           value="Mérida" required
+                           class="field-input">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label for="dir-estado" class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                        Estado
+                    </label>
+                    <input id="dir-estado" name="estado_mx" type="text"
+                           value="Yucatán" required
+                           class="field-input">
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label for="dir-refs" class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                    Referencias <span class="normal-case font-normal">(opcional)</span>
+                </label>
+                <textarea id="dir-refs" name="referencias" rows="2"
+                          placeholder="Casa azul con portón negro, junto al OXXO..."
+                          class="field-input resize-none"></textarea>
+            </div>
+
+            <!-- Casilla de Autoguardado -->
+            <div class="flex items-center gap-2 mt-4 mb-2">
+                <input id="guardar-direccion-chk" type="checkbox" name="guardar_direccion" checked
+                       class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary">
+                <label for="guardar-direccion-chk" class="font-sans text-xs text-secondary/70 cursor-pointer select-none">
+                    Guardar dirección para futuras compras
+                </label>
+            </div>
+
+            <!-- ─── Sección 2: Tarjeta ─────────────────────────────── -->
+            <div class="border-t border-gray-100 pt-4">
+                <p class="font-sans text-[10px] font-semibold tracking-[.3em] uppercase text-secondary/40 mb-3">
+                    Datos de Tarjeta
+                </p>
+
+                <div class="flex flex-col gap-1">
+                    <label for="card-name" class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                        Nombre en la tarjeta
+                    </label>
+                    <input id="card-name" type="text" autocomplete="cc-name"
+                           placeholder="María García" required
+                           class="field-input">
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                        Número · Expiración · CVC
+                    </label>
+                    <div id="card-element"></div>
+                    <p id="card-errors" role="alert"></p>
+                </div>
+            </div>
+
+            <!-- ─── Botón confirmar ────────────────────────────────── -->
+            <button id="btn-pagar" type="submit">
+                <div class="btn-spinner"></div>
+                <span class="btn-label">Confirmar Pago — ${{ total }}</span>
+            </button>
+
+            <!-- Seguridad -->
+            <div class="flex items-center justify-center gap-2 mt-1">
+                <svg class="w-3 h-3 text-secondary/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+                <p class="font-sans text-[10px] text-secondary/30 tracking-wide">
+                    Cifrado SSL · Procesado por Stripe
+                </p>
+            </div>
+        </form>
+
+        <!-- Pantalla de Estado de Transición (Procesando / Éxito / Error) -->
+        <div id="checkout-status-screen" class="hidden absolute inset-0 bg-white z-50 flex flex-col items-center justify-center p-8 text-center">
+            <!-- Iconos de estado -->
+            <div id="status-icon-container" class="relative w-24 h-24 mb-6">
+                <!-- Loader -->
+                <div id="status-loader" class="absolute inset-0 border-4 border-neutral-100 border-t-primary rounded-full animate-spin"></div>
+                <!-- Éxito (Palomita) -->
+                <div id="status-success" class="hidden absolute inset-0 bg-black rounded-full flex items-center justify-center text-white text-4xl animate-scale-up">✓</div>
+                <!-- Error (Equis) -->
+                <div id="status-error" class="hidden absolute inset-0 bg-red-600 rounded-full flex items-center justify-center text-white text-4xl animate-scale-up">×</div>
+            </div>
+            
+            <h3 id="status-title" class="font-serif italic text-2xl font-normal text-primary mb-2">Procesando tu compra...</h3>
+            <p id="status-message" class="font-sans text-xs text-secondary/60 leading-relaxed max-w-xs mb-8">Estamos verificando tu tarjeta de forma segura con Stripe. Por favor, no cierres esta ventana.</p>
+            
+            <!-- Botón de reintento para error -->
+            <button id="status-retry-btn" type="button" class="hidden btn-editorial w-full py-3" onclick="resetCheckoutStatus()">
+                Reintentar Pago
+            </button>
+        </div>
+
+        {% else %}
+        <!-- Sin clave Stripe configurada -->
+        <div class="flex flex-col gap-4 flex-1 justify-center text-center py-8">
+            <div class="w-12 h-12 bg-neutral flex items-center justify-center mx-auto">
+                <svg class="w-5 h-5 text-secondary/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/>
+                </svg>
+            </div>
+            <p class="font-serif italic text-lg text-primary/60">Pago no configurado</p>
+            <p class="font-sans text-xs text-secondary/50 leading-relaxed max-w-xs mx-auto">
+                Agrega tu <code class="bg-neutral px-1">STRIPE_PUBLIC_KEY</code> en el archivo
+                <code class="bg-neutral px-1">.env</code> para activar el pago con tarjeta.
+            </p>
+        </div>
+        {% endif %}
+
+    </div><!-- /drawer -->
+</div><!-- /payment-panel -->
+
+
+<!-- Stripe JS + flujo completo de checkout -->
+{% if stripe_public_key %}
 <script src="https://js.stripe.com/v3/"></script>
 <script>
-    var stripe = Stripe('{{ stripe_public_key }}');
-    document.getElementById('btn-checkout').addEventListener('click', function () {
-        // TODO Fase 3: crear checkout session en el servidor y redirigir
-        alert('Integración de pago lista. Configura tu Stripe Session en el servidor.');
+(function () {
+    'use strict';
+
+    const CHECKOUT_URL = '{% url "crear_orden_checkout" %}';
+    const CSRF_TOKEN   = '{{ csrf_token }}';
+
+    // ── Stripe ───────────────────────────────────────────────────
+    const stripe   = Stripe('{{ stripe_public_key }}');
+    const elements = stripe.elements({
+        fonts: [{ cssSrc: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap' }],
     });
+    const cardElement = elements.create('card', {
+        style: {
+            base: {
+                fontFamily: '"Inter", system-ui, sans-serif',
+                fontSize:   '14px',
+                color:      '#000000',
+                '::placeholder': { color: '#9ca3af' },
+            },
+            invalid: { color: '#e53e3e' },
+        },
+        hidePostalCode: true,
+    });
+    cardElement.mount('#card-element');
+    cardElement.on('change', e => {
+        document.getElementById('card-errors').textContent = e.error ? e.error.message : '';
+    });
+
+    // ── Abrir / cerrar panel ─────────────────────────────────────
+    window.openPaymentPanel = () => {
+        document.getElementById('payment-panel').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    };
+    window.closePaymentPanel = () => {
+        document.getElementById('payment-panel').classList.remove('open');
+        document.body.style.overflow = '';
+    };
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePaymentPanel(); });
+    document.getElementById('btn-checkout').addEventListener('click', openPaymentPanel);
+
+    // ── Autorelleno de Direcciones Guardadas ─────────────────────
+    const fillAddressForm = (opt) => {
+        if (!opt || !opt.value) {
+            // Si elige nueva dirección, limpiar campos
+            document.getElementById('dir-telefono').value = '';
+            document.getElementById('dir-calle').value = '';
+            document.getElementById('dir-colonia').value = '';
+            document.getElementById('dir-cp').value = '';
+            document.getElementById('dir-ciudad').value = 'Mérida';
+            document.getElementById('dir-estado').value = 'Yucatán';
+            document.getElementById('dir-refs').value = '';
+            return;
+        }
+        document.getElementById('dir-telefono').value = opt.dataset.telefono || '';
+        document.getElementById('dir-calle').value = opt.dataset.calle || '';
+        document.getElementById('dir-colonia').value = opt.dataset.colonia || '';
+        document.getElementById('dir-cp').value = opt.dataset.cp || '';
+        document.getElementById('dir-ciudad').value = opt.dataset.ciudad || 'Mérida';
+        document.getElementById('dir-estado').value = opt.dataset.estado || 'Yucatán';
+        document.getElementById('dir-refs').value = opt.dataset.refs || '';
+    };
+
+    const selector = document.getElementById('selector-direcciones');
+    if (selector) {
+        // Rellenar con la favorita por defecto al cargar si existe una seleccionada
+        if (selector.selectedIndex >= 0) {
+            fillAddressForm(selector.options[selector.selectedIndex]);
+        }
+        
+        // Escuchar cambios
+        selector.addEventListener('change', e => {
+            fillAddressForm(selector.options[selector.selectedIndex]);
+        });
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────
+    const fieldVal = id => document.getElementById(id)?.value.trim() ?? '';
+    const setError = (msg, color = '#e53e3e') => {
+        const el = document.getElementById('card-errors');
+        if (el) {
+            el.style.color = color;
+            el.textContent = msg;
+        }
+    };
+    const setLoading = on => {
+        const btn = document.getElementById('btn-pagar');
+        if (btn) {
+            btn.disabled = on;
+            btn.classList.toggle('loading', on);
+        }
+    };
+
+    // ── Pantalla de Estado de Checkout (Loading/Success/Error) ──
+    const statusScreen = document.getElementById('checkout-status-screen');
+    const statusLoader = document.getElementById('status-loader');
+    const statusSuccess = document.getElementById('status-success');
+    const statusError = document.getElementById('status-error');
+    const statusTitle = document.getElementById('status-title');
+    const statusMessage = document.getElementById('status-message');
+    const statusRetryBtn = document.getElementById('status-retry-btn');
+
+    const showCheckoutStatus = (type, title, message) => {
+        // Revelar pantalla
+        statusScreen.classList.remove('hidden');
+        // Usar un micro-delay para permitir la transición de opacidad de Tailwind
+        setTimeout(() => statusScreen.classList.add('open'), 10);
+        
+        // Resetear visibilidad de sub-componentes
+        statusLoader.classList.add('hidden');
+        statusSuccess.classList.add('hidden');
+        statusError.classList.add('hidden');
+        statusRetryBtn.classList.add('hidden');
+        
+        statusTitle.textContent = title;
+        statusMessage.textContent = message;
+        
+        if (type === 'loading') {
+            statusLoader.classList.remove('hidden');
+        } else if (type === 'success') {
+            statusSuccess.classList.remove('hidden');
+        } else if (type === 'error') {
+            statusError.classList.remove('hidden');
+            statusRetryBtn.classList.remove('hidden');
+        }
+    };
+
+    window.resetCheckoutStatus = () => {
+        statusScreen.classList.remove('open');
+        setTimeout(() => statusScreen.classList.add('hidden'), 300);
+        setLoading(false);
+        setError('');
+    };
+
+    // ── Envío del formulario ─────────────────────────────────────
+    document.getElementById('payment-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        setError('');
+        setLoading(true);
+
+        // Mostrar pantalla de procesamiento animada
+        showCheckoutStatus('loading', 'Procesando tu compra...', 'Estamos conectando de forma segura con Stripe para validar tu tarjeta.');
+
+        // 1) Crear PaymentMethod con Stripe
+        const { paymentMethod, error } = await stripe.createPaymentMethod({
+            type:            'card',
+            card:            cardElement,
+            billing_details: { name: fieldVal('card-name') },
+        });
+
+        if (error) {
+            showCheckoutStatus('error', 'Pago Declinado', error.message);
+            return;
+        }
+
+        // 2) Recopilar dirección
+        const direccion = {
+            telefono:      fieldVal('dir-telefono'),
+            calle:         fieldVal('dir-calle'),
+            colonia:       fieldVal('dir-colonia'),
+            codigo_postal: fieldVal('dir-cp'),
+            ciudad:        fieldVal('dir-ciudad'),
+            estado_mx:     fieldVal('dir-estado'),
+            referencias:   fieldVal('dir-refs'),
+        };
+
+        // Actualizar mensaje de procesamiento
+        showCheckoutStatus('loading', 'Guardando tu orden...', 'Stripe ha validado tu tarjeta, registrando los datos de tu orden en Panimii.');
+
+        // 3) Enviar al backend → crear Orden en PostgreSQL
+        const chk = document.getElementById('guardar-direccion-chk');
+        const guardar_direccion = chk ? chk.checked : false;
+
+        let res;
+        try {
+            res = await fetch(CHECKOUT_URL, {
+                method:  'POST',
+                headers: {
+                    'Content-Type':     'application/json',
+                    'X-CSRFToken':      CSRF_TOKEN,
+                },
+                body: JSON.stringify({
+                    payment_method_id: paymentMethod.id,
+                    direccion,
+                    guardar_direccion,
+                }),
+            });
+        } catch {
+            showCheckoutStatus('error', 'Error de Conexión', 'Hubo un problema de red. Por favor, verifica tu internet e intenta de nuevo.');
+            return;
+        }
+
+        const data = await res.json();
+
+        if (!data.ok) {
+            showCheckoutStatus('error', 'Error en el Pago', data.error || 'Ocurrió un error inesperado al procesar tu tarjeta.');
+            return;
+        }
+
+        // 4a) Requiere 3D Secure (Autenticación multifactor bancaria)
+        if (data.requires_action) {
+            showCheckoutStatus('loading', 'Autenticación Requerida', 'Por favor, completa la verificación 3D Secure de tu banco en la ventana flotante.');
+            
+            const { error: confirmError } = await stripe.handleCardAction(data.client_secret);
+            if (confirmError) {
+                showCheckoutStatus('error', 'Verificación Declinada', confirmError.message);
+                return;
+            }
+            
+            showCheckoutStatus('loading', 'Confirmando tu orden...', 'Autenticación completada con éxito. Guardando datos en nuestro sistema.');
+            
+            // Tras 3DS exitoso, confirmar en el servidor
+            let res2;
+            try {
+                res2 = await fetch(CHECKOUT_URL, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+                    body: JSON.stringify({ payment_method_id: paymentMethod.id, direccion, orden_id: data.orden_id }),
+                });
+            } catch {
+                showCheckoutStatus('error', 'Error de Red', 'Error confirmando autenticación 3DS. Por favor intenta de nuevo.');
+                return;
+            }
+            
+            const data2 = await res2.json();
+            if (!data2.ok) { 
+                showCheckoutStatus('error', 'Error en Confirmación', data2.error || 'Error finalizando el cobro.');
+                return; 
+            }
+        }
+
+        // 4b) Pago exitoso → Mostrar animación de palomita verde y redirigir
+        const successUrl = data.orden_id ? `/carrito/orden/${data.orden_id}/` : '/mi-cuenta/';
+        showCheckoutStatus('success', '¡Pago Exitoso!', 'Tu orden de dulzura ha sido creada correctamente. Redirigiendo a tu seguimiento...');
+        setTimeout(() => { window.location.href = successUrl; }, 2000);
+    });
+})();
+</script>
+{% else %}
+{# Sin clave Stripe: botón abre panel informativo #}
+<script>
+    window.openPaymentPanel  = () => { document.getElementById('payment-panel').classList.add('open');    document.body.style.overflow = 'hidden'; };
+    window.closePaymentPanel = () => { document.getElementById('payment-panel').classList.remove('open'); document.body.style.overflow = '';       };
+    document.getElementById('btn-checkout').addEventListener('click', openPaymentPanel);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closePaymentPanel(); });
 </script>
 {% endif %}
 
+{% endif %}{# /if items and user.is_authenticated #}
+
 {% endblock %}
+

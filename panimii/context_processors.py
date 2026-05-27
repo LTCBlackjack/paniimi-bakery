@@ -15,3 +15,12 @@ def carrito_count(request):
     carrito = request.session.get('carrito', {})
     count = sum(item.get('cantidad', 0) for item in carrito.values())
     return {'carrito_count': count}
+
+
+def temporada_activa(request):
+    """
+    Inyecta `temporada_activa` (ej. 'original', 'primavera', etc.) en todos los templates.
+    """
+    from catalogo.models import ConfiguracionTemporada
+    return {'temporada_activa': ConfiguracionTemporada.get_activa()}
+

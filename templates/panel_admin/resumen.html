@@ -1,0 +1,164 @@
+{% extends "panel_admin/admin_base.html" %}
+
+{% block title %}Resumen General{% endblock %}
+{% block page_title %}Resumen General{% endblock %}
+
+{% block content %}
+
+<!-- ── Encabezado ──────────────────────────────────────────────────────── -->
+<div class="mb-8 animate-fade-in-up">
+    <p class="text-xs font-semibold tracking-widest uppercase text-accent-muted mb-1">
+        Bienvenido, {{ user.get_full_name|default:user.username }}
+    </p>
+    <h2 class="font-serif text-2xl font-bold text-primary">Resumen del Negocio</h2>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     CUADRÍCULA DE MÉTRICAS — 4 tarjetas
+     ════════════════════════════════════════════════════════════════ -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-10">
+
+    <!-- Ventas del Día -->
+    <div class="metric-card animate-fade-in-up" style="animation-delay:0ms">
+        <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-semibold uppercase tracking-widest text-accent-muted">
+                Ventas del Día
+            </span>
+            <span class="w-9 h-9 rounded-full bg-stat-green/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-stat-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </span>
+        </div>
+        <p class="font-serif text-3xl font-bold text-primary">${{ ventas_dia|floatformat:2 }}</p>
+        <p class="text-xs text-accent-muted">Ingresos de hoy</p>
+        <div class="mt-2 h-0.5 w-8 bg-stat-green"></div>
+    </div>
+
+    <!-- Pedidos Pendientes -->
+    <div class="metric-card animate-fade-in-up" style="animation-delay:80ms">
+        <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-semibold uppercase tracking-widest text-accent-muted">
+                Pedidos Pendientes
+            </span>
+            <span class="w-9 h-9 rounded-full bg-stat-amber/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-stat-amber" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </span>
+        </div>
+        <p class="font-serif text-3xl font-bold text-primary">{{ pedidos_pendientes }}</p>
+        <p class="text-xs text-accent-muted">Pagadas, no entregadas</p>
+        <div class="mt-2 h-0.5 w-8 bg-stat-amber"></div>
+    </div>
+
+    <!-- Unidades Vendidas -->
+    <div class="metric-card animate-fade-in-up" style="animation-delay:160ms">
+        <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-semibold uppercase tracking-widest text-accent-muted">
+                Unidades Vendidas
+            </span>
+            <span class="w-9 h-9 rounded-full bg-stat-blue/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-stat-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </span>
+        </div>
+        <p class="font-serif text-3xl font-bold text-primary">{{ unidades_vendidas }}</p>
+        <p class="text-xs text-accent-muted">Piezas en total</p>
+        <div class="mt-2 h-0.5 w-8 bg-stat-blue"></div>
+    </div>
+
+    <!-- Clientes Registrados -->
+    <div class="metric-card animate-fade-in-up" style="animation-delay:240ms">
+        <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-semibold uppercase tracking-widest text-accent-muted">
+                Clientes
+            </span>
+            <span class="w-9 h-9 rounded-full bg-stat-rose/10 flex items-center justify-center">
+                <svg class="w-4 h-4 text-stat-rose" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/>
+                </svg>
+            </span>
+        </div>
+        <p class="font-serif text-3xl font-bold text-primary">{{ clientes_registrados }}</p>
+        <p class="text-xs text-accent-muted">Registrados activos</p>
+        <div class="mt-2 h-0.5 w-8 bg-stat-rose"></div>
+    </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     TABLA — Últimos 5 Pedidos Recientes
+     ════════════════════════════════════════════════════════════════ -->
+<div class="bg-admin-card border border-zinc-200 animate-fade-in-up" style="animation-delay:300ms">
+
+    <!-- Encabezado de la sección -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-100">
+        <h3 class="font-serif text-base font-bold text-primary">Pedidos Recientes</h3>
+        <a href="{% url 'panel_admin:pedidos' %}" class="btn-admin-outline">
+            Ver todos
+        </a>
+    </div>
+
+    <!-- Tabla -->
+    {% if ultimas_ordenes %}
+    <div class="overflow-x-auto">
+        <table class="admin-table w-full">
+            <thead>
+                <tr>
+                    <th># Orden</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th class="text-right">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for orden in ultimas_ordenes %}
+                <tr>
+                    <td class="font-semibold text-primary">#{{ orden.pk|stringformat:"04d" }}</td>
+                    <td>
+                        {% if orden.cliente %}
+                            <span class="font-medium">{{ orden.cliente.get_full_name|default:orden.cliente.username }}</span>
+                            <span class="block text-xs text-accent-muted">{{ orden.cliente.email }}</span>
+                        {% else %}
+                            <span class="text-accent-muted italic">{{ orden.email_cliente|default:"Anónimo" }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="font-semibold text-primary">${{ orden.total|floatformat:2 }}</td>
+                    <td>
+                        <span class="badge badge-{{ orden.estado }}">
+                            {{ orden.get_estado_display }}
+                        </span>
+                    </td>
+                    <td class="text-accent-muted">{{ orden.creado|date:"d M Y, H:i" }}</td>
+                    <td class="text-right">
+                        <a href="{% url 'panel_admin:detalle_pedido' orden.pk %}"
+                           class="btn-admin">
+                            Ver Detalle
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <!-- Estado vacío -->
+    <div class="py-16 flex flex-col items-center gap-3 text-accent-muted">
+        <svg class="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
+                     M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <p class="text-sm font-medium">Aún no hay pedidos registrados</p>
+        <p class="text-xs opacity-70">Los pedidos aparecerán aquí cuando los clientes realicen compras.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

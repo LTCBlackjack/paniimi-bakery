@@ -22,16 +22,40 @@
                             leading-[1.08] mb-8
                             animate-fade-in-up"
                     style="animation-delay: 0ms;">
-                    El Arte de la
-                    <span class="italic font-normal block">Galleta Perfecta</span>
+                    {% if temporada_activa == 'primavera' %}
+                        El Arte de la
+                        <span class="italic font-normal block">Galleta Floreciente</span>
+                    {% elif temporada_activa == 'verano' %}
+                        La Dulzura bajo el
+                        <span class="italic font-normal block">Sol Radiante</span>
+                    {% elif temporada_activa == 'otono' %}
+                        El Cálido Aroma del
+                        <span class="italic font-normal block">Cacao y Trigo</span>
+                    {% elif temporada_activa == 'invierno' %}
+                        Dulce Calor para
+                        <span class="italic font-normal block">Días Fríos</span>
+                    {% else %}
+                        El Arte de la
+                        <span class="italic font-normal block">Galleta Perfecta</span>
+                    {% endif %}
                 </h1>
 
                 <!-- [2] Párrafo — 200ms después -->
                 <p class="font-sans text-base text-secondary leading-relaxed mb-10 max-w-sm
                            animate-fade-in-up"
                    style="animation-delay: 200ms;">
-                    Artesanía pura en cada mordida. Descubre nuestra colección
-                    de galletas de autor, horneadas diariamente para elevar tu paladar.
+                    {% if temporada_activa == 'primavera' %}
+                        El renacer de los sabores más puros. Explora recetas suaves e infusionadas con toques florales y la calidez del viento primaveral.
+                    {% elif temporada_activa == 'verano' %}
+                        Brillo, frescura y sabor en armonía. Galletas con ingredientes frescos, cítricos vibrantes y notas dulces ideales para tardes soleadas.
+                    {% elif temporada_activa == 'otono' %}
+                        El refugio perfecto en un bocado. Saborea nuestras creaciones especiales con canela, especias, calabaza y nuez moscada.
+                    {% elif temporada_activa == 'invierno' %}
+                        Confort artesanal junto a la chimenea. El mejor chocolate belga y notas especiadas pensadas para acompañar tu taza favorita.
+                    {% else %}
+                        Artesanía pura en cada mordida. Descubre nuestra colección
+                        de galletas de autor, horneadas diariamente para elevar tu paladar.
+                    {% endif %}
                 </p>
 
                 <!-- [3] Botón — 400ms después -->
@@ -52,8 +76,8 @@
                 <!-- Imagen: overflow-hidden para contener el scale; zoom en hover -->
                 <div class="relative z-10 overflow-hidden">
                     <img
-                        src="{% static 'img/oso_acostado.webp' %}"
-                        alt="Oso polar acostado sobre galletas artesanales"
+                        src="{% static 'img/' %}{% if temporada_activa == 'primavera' %}oso_primavera.webp{% elif temporada_activa == 'verano' %}oso_verano.webp{% elif temporada_activa == 'otono' %}oso_otono.webp{% elif temporada_activa == 'invierno' %}oso_invierno.webp{% else %}oso_acostado.webp{% endif %}"
+                        alt="Oso polar ilustrativo de temporada"
                         class="w-full h-auto object-contain
                                transition-transform duration-700 ease-out
                                hover:scale-[1.04]"
@@ -63,7 +87,17 @@
                 <!-- Caption flotante — esquina inferior izquierda -->
                 <div class="absolute bottom-8 left-0 bg-surface border border-neutral p-4 shadow-md hidden md:block max-w-[180px] z-20">
                     <span class="font-serif italic text-xs text-primary leading-snug block">
-                        "Tan buenas que no querrás compartir."
+                        {% if temporada_activa == 'primavera' %}
+                            "¡La primavera ha florecido en cada bocado! 🌸"
+                        {% elif temporada_activa == 'verano' %}
+                            "Sabor fresco y radiante bajo el sol. ☀️"
+                        {% elif temporada_activa == 'otono' %}
+                            "El cálido y reconfortante aroma del hogar. 🍂"
+                        {% elif temporada_activa == 'invierno' %}
+                            "Calidez dulce para abrigar tu corazón. ❄️"
+                        {% else %}
+                            "Tan buenas que no querrás compartir."
+                        {% endif %}
                     </span>
                 </div>
 
@@ -74,12 +108,96 @@
 </section>
 
 
+
+<!-- ═══════════════════════════════════════════════════════
+     SECCIÓN 1.5 — OFERTAS ESPECIALES
+     Micro-interacción: Scroll Reveal + hover effects
+     ═══════════════════════════════════════════════════ -->
+<section class="section-neutral">
+    <div class="max-w-7xl mx-auto px-container">
+        
+        <!-- Encabezado de la Sección -->
+        <div class="text-center mb-16 reveal">
+            <span class="font-sans text-xs font-semibold tracking-[0.3em] uppercase text-secondary/50 mb-3 block">
+                Tentaciones del Día
+            </span>
+            <h2 class="font-serif text-4xl lg:text-5xl font-bold text-primary">
+                Ofertas Especiales
+            </h2>
+            <div class="w-12 h-[1px] bg-primary mx-auto mt-6"></div>
+        </div>
+
+        <!-- Grid de Ofertas -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for prod in ofertas %}
+            <div class="group relative bg-surface border border-neutral/60 p-6 flex flex-col justify-between transition-all duration-300 hover:shadow-lg rounded-editorial-none reveal"
+                 style="transition-delay: {% if forloop.counter0 == 1 %}150ms{% elif forloop.counter0 == 2 %}300ms{% else %}0ms{% endif %};">
+                
+                <!-- Etiqueta de Descuento -->
+                <div class="absolute top-4 left-4 z-20">
+                    <span class="bg-primary text-white text-[9px] font-bold tracking-[0.2em] uppercase px-3 py-1.5 rounded-editorial-none">
+                        15% OFF
+                    </span>
+                </div>
+
+                <!-- Imagen del Producto -->
+                <div class="relative overflow-hidden mb-6 aspect-square bg-neutral flex items-center justify-center">
+                    {% if prod.imagen %}
+                        <img src="{{ prod.imagen.url }}" alt="{{ prod.nombre }}" 
+                             class="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105">
+                    {% else %}
+                        <span class="font-serif italic text-sm text-secondary/40">Sin imagen</span>
+                    {% endif %}
+                </div>
+
+                <!-- Detalles del Producto -->
+                <div class="flex-grow flex flex-col justify-between">
+                    <div>
+                        <span class="font-sans text-[10px] font-semibold tracking-widest uppercase text-secondary/40 block mb-1">
+                            {{ prod.categoria.nombre }}
+                        </span>
+                        <h3 class="font-serif text-xl font-bold text-primary mb-2 transition-colors duration-300 group-hover:text-secondary">
+                            {{ prod.nombre }}
+                        </h3>
+                        <p class="font-sans text-sm text-secondary/70 leading-relaxed mb-6 line-clamp-2">
+                            {{ prod.descripcion }}
+                        </p>
+                    </div>
+
+                    <!-- Precios y Acción Rápida -->
+                    <div class="pt-4 border-t border-neutral/50 flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-xs text-secondary/50 line-through font-sans font-medium">${{ prod.precio }} MXN</span>
+                            <span class="text-lg font-bold text-primary font-sans">${{ prod.precio_descuento }} MXN</span>
+                        </div>
+                        
+                        <!-- Formulario para agregar rápido al carrito -->
+                        <form action="{% url 'agregar_al_carrito' prod.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-editorial !px-4 !py-2.5 !text-[11px] tracking-widest flex items-center gap-2 hover:opacity-90">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-3.5 h-3.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                                </svg>
+                                AGREGAR
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+</section>
+
+
 <!-- ═══════════════════════════════════════════════════════
      SECCIÓN 2 — HORNEADO CON PACIENCIA
      Micro-interacción: Scroll Reveal — desliza desde abajo
      reveal-stagger: imagen 0ms · etiqueta 120ms · h2 y p 240ms
      ═══════════════════════════════════════════════════ -->
-<section class="section-neutral">
+<section class="section-surface">
     <div class="max-w-7xl mx-auto px-container">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 
@@ -121,7 +239,7 @@
      SECCIÓN 3 — NOSOTROS
      Micro-interacción: Scroll Reveal — texto izq, imagen der
      ═══════════════════════════════════════════════════ -->
-<section class="section-surface">
+<section class="section-neutral">
     <div class="max-w-7xl mx-auto px-container">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
 

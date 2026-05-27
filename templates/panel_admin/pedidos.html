@@ -1,0 +1,89 @@
+{% extends "panel_admin/admin_base.html" %}
+
+{% block title %}Gestión de Pedidos{% endblock %}
+{% block page_title %}Gestión de Pedidos{% endblock %}
+
+{% block content %}
+
+<!-- Filtros -->
+<div class="flex flex-wrap items-center gap-3 mb-6 animate-fade-in-up">
+    <form method="GET" class="flex flex-wrap items-center gap-2">
+        <span class="text-xs font-semibold uppercase tracking-widest text-accent-muted">Filtrar:</span>
+        <a href="{% url 'panel_admin:pedidos' %}"
+           class="btn-admin{% if not estado_filtro %} opacity-100{% else %} opacity-40{% endif %}">
+            Todos
+        </a>
+        {% for valor, etiqueta in estados %}
+        <a href="?estado={{ valor }}"
+           class="btn-admin-outline {% if estado_filtro == valor %}border-primary text-primary{% endif %}">
+            {{ etiqueta }}
+        </a>
+        {% endfor %}
+    </form>
+</div>
+
+<!-- Tabla de pedidos -->
+<div class="bg-admin-card border border-zinc-200 animate-fade-in-up" style="animation-delay:80ms">
+    <div class="px-6 py-4 border-b border-zinc-100">
+        <h3 class="font-serif text-base font-bold text-primary">
+            {% if estado_filtro %}
+                Pedidos: {{ estado_filtro|title }}
+            {% else %}
+                Todos los Pedidos
+            {% endif %}
+            <span class="ml-2 text-sm font-sans font-normal text-accent-muted">({{ ordenes|length }})</span>
+        </h3>
+    </div>
+
+    {% if ordenes %}
+    <div class="overflow-x-auto">
+        <table class="admin-table w-full">
+            <thead>
+                <tr>
+                    <th># Orden</th>
+                    <th>Cliente</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th class="text-right">Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for orden in ordenes %}
+                <tr>
+                    <td class="font-semibold text-primary">#{{ orden.pk|stringformat:"04d" }}</td>
+                    <td>
+                        {% if orden.cliente %}
+                            <span class="font-medium">{{ orden.cliente.get_full_name|default:orden.cliente.username }}</span>
+                        {% else %}
+                            <span class="text-accent-muted italic">{{ orden.email_cliente|default:"Anónimo" }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="font-semibold">${{ orden.total|floatformat:2 }}</td>
+                    <td>
+                        <span class="badge badge-{{ orden.estado }}">
+                            {{ orden.get_estado_display }}
+                        </span>
+                    </td>
+                    <td class="text-accent-muted">{{ orden.creado|date:"d M Y, H:i" }}</td>
+                    <td class="text-right">
+                        <a href="{% url 'panel_admin:detalle_pedido' orden.pk %}"
+                           class="btn-admin">Ver</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="py-16 flex flex-col items-center gap-3 text-accent-muted">
+        <svg class="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        <p class="text-sm font-medium">No hay pedidos con este estado</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

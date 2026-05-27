@@ -70,6 +70,9 @@
             <a href="#" data-tab="perfil" class="nav-link">
                 <span class="dot"></span>Perfil
             </a>
+            <a href="#" data-tab="direcciones" class="nav-link">
+                <span class="dot"></span>Mis Direcciones
+            </a>
         </nav>
 
         <!-- Cerrar sesión -->
@@ -442,6 +445,124 @@
             </div>
         </div>
 
+        <!-- ────────────────────────────────────────────────────
+             PANEL: MIS DIRECCIONES
+             ─────────────────────────────────────────────────── -->
+        <div id="tab-direcciones" class="tab-panel hidden max-w-4xl mx-auto px-6 lg:px-10 py-10">
+
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-10 gap-4">
+                <div>
+                    <p class="font-sans text-xs font-semibold tracking-[.3em] uppercase text-secondary/40 mb-2">
+                        Logística Yucatán
+                    </p>
+                    <h1 class="font-serif italic text-5xl lg:text-6xl font-normal text-primary leading-none">
+                        Mis Direcciones
+                    </h1>
+                </div>
+                <button onclick="openDireccionModal()" class="btn-editorial text-center py-3 px-6 sm:w-auto">
+                    + Nueva Dirección
+                </button>
+            </div>
+
+            <!-- Listado de direcciones -->
+            <div id="direcciones-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for dir in direcciones %}
+                <div id="direccion-card-{{ dir.pk }}" class="bg-surface border {% if dir.predetermina %}border-primary ring-2 ring-primary/5{% else %}border-neutral/80{% endif %} p-6 flex flex-col justify-between transition-all duration-300 relative">
+                    <div>
+                        <div class="flex items-center justify-between gap-3 mb-4">
+                            <h3 class="font-serif text-lg font-bold text-primary truncate">{{ dir.alias }}</h3>
+                            {% if dir.predetermina %}
+                            <span class="font-sans text-[8px] font-bold tracking-widest uppercase bg-primary text-white px-2 py-0.5 rounded-editorial-none">
+                                Favorita
+                            </span>
+                            {% endif %}
+                        </div>
+                        <p class="font-sans text-xs text-secondary/70 leading-relaxed mb-4">
+                            <strong>Dirección:</strong> {{ dir.calle }}, {{ dir.colonia }}<br>
+                            {{ dir.ciudad }}, {{ dir.estado_mx }}, CP {{ dir.codigo_postal }}
+                        </p>
+                        {% if dir.referencias %}
+                        <p class="font-sans text-[11px] text-secondary/50 mb-4 italic">
+                            <strong>Refs:</strong> {{ dir.referencias }}
+                        </p>
+                        {% endif %}
+                        <p class="font-sans text-xs text-secondary/70 mb-4">
+                            <strong>Teléfono:</strong> {{ dir.telefono }}
+                        </p>
+                    </div>
+
+                    <div class="border-t border-neutral pt-4 mt-2 flex gap-3 flex-wrap">
+                        {% if not dir.predetermina %}
+                        <button onclick="setPredeterminada({{ dir.pk }})" 
+                                class="font-sans text-[9px] font-semibold tracking-widest uppercase text-secondary/60 hover:text-primary transition-colors">
+                            Favorita
+                        </button>
+                        {% endif %}
+                        <button onclick="openDireccionModal({{ dir.pk }}, '{{ dir.alias|escapejs }}', '{{ dir.telefono }}', '{{ dir.calle|escapejs }}', '{{ dir.colonia|escapejs }}', '{{ dir.ciudad|escapejs }}', '{{ dir.estado_mx|escapejs }}', '{{ dir.codigo_postal }}', '{{ dir.referencias|escapejs }}', {{ dir.predetermina|yesno:'true,false' }})" 
+                                class="font-sans text-[9px] font-semibold tracking-widest uppercase text-secondary/60 hover:text-primary transition-colors">
+                            Editar
+                        </button>
+                        <button onclick="eliminarDireccion({{ dir.pk }})" 
+                                class="font-sans text-[9px] font-semibold tracking-widest uppercase text-red-600/70 hover:text-red-600 transition-colors">
+                            Eliminar
+                        </button>
+                    </div>
+                </div>
+                {% empty %}
+                <!-- Empty State -->
+                <div id="direcciones-empty-state" class="bg-surface border border-neutral/80 py-16 px-8 text-center sm:col-span-2">
+                    <svg class="w-12 h-12 text-secondary/30 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+                    </svg>
+                    <p class="font-serif italic text-2xl text-primary/60 mb-2">"Aún no tienes direcciones."</p>
+                    <p class="font-sans text-sm text-secondary/50 mb-6 max-w-md mx-auto">
+                        Guarda tus direcciones de entrega para agilizar tus compras en el checkout de Panimii.
+                    </p>
+                    <button onclick="openDireccionModal()" class="btn-editorial py-3 px-8 text-center text-xs">
+                        Agregar mi primera dirección
+                    </button>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+
+        <!-- Modal de Dirección (Crear / Editar) -->
+        <div id="direccion-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4">
+            <!-- Overlay oscurecedor -->
+            <div class="absolute inset-0 bg-black/50" onclick="closeDireccionModal()"></div>
+            
+            <!-- Contenido del modal -->
+            <div class="relative bg-white border border-neutral/80 w-full max-w-md p-8 rounded-editorial-sm shadow-xl z-10 animate-fade-in-up">
+                <div class="flex justify-between items-center border-b border-neutral pb-4 mb-6">
+                    <h3 id="modal-title" class="font-serif italic text-2xl font-normal text-primary">Agregar Dirección</h3>
+                    <button onclick="closeDireccionModal()" class="text-secondary/40 hover:text-primary text-2xl leading-none">×</button>
+                </div>
+                
+                <form id="direccion-form" class="space-y-4" novalidate>
+                    <input type="hidden" id="dir-id" name="id">
+                    
+                    {% csrf_token %}
+                    {% for field in form_direccion %}
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center justify-between">
+                            <label for="{{ field.id_for_label }}" class="font-sans text-[10px] font-semibold tracking-[.2em] uppercase text-secondary/50">
+                                {{ field.label }}
+                            </label>
+                            <p class="text-[10px] text-red-600 hidden" id="err-{{ field.name }}"></p>
+                        </div>
+                        {{ field }}
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="flex gap-4 pt-4 border-t border-neutral mt-6">
+                        <button type="submit" class="btn-editorial flex-1 text-center py-3">Guardar</button>
+                        <button type="button" class="border border-primary/20 text-primary font-sans text-xs font-semibold tracking-[.2em] uppercase px-6 py-3 rounded-editorial-sm hover:bg-neutral flex-1" onclick="closeDireccionModal()">Cancelar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </main>
 </div>
 
@@ -481,6 +602,166 @@
     // Restaura pestaña guardada o muestra 'dashboard' por defecto
     var saved = sessionStorage.getItem('dash-tab') || 'dashboard';
     activate(saved);
+})();
+</script>
+
+<!-- ══ SCRIPT: Gestión de Direcciones (AJAX) ═════════════════════ -->
+<script>
+(function () {
+    'use strict';
+    
+    const SAVE_URL = '{% url "guardar_direccion_ajax" %}';
+    const DELETE_URL = '{% url "eliminar_direccion_ajax" %}';
+    const DEFAULT_URL = '{% url "establecer_predeterminada_ajax" %}';
+    
+    // Abrir modal (Crear o Editar)
+    window.openDireccionModal = function(id = '', alias = '', telefono = '', calle = '', colonia = '', ciudad = 'Mérida', estado = 'Yucatán', cp = '', refs = '', predetermina = false) {
+        document.getElementById('direccion-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Limpiar errores previos
+        document.querySelectorAll('[id^="err-"]').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
+        
+        // Asignar valores
+        document.getElementById('dir-id').value = id;
+        document.getElementById('modal-title').textContent = id ? 'Editar Dirección' : 'Agregar Dirección';
+        
+        // Asignar a campos del formulario
+        document.querySelector('[name="alias"]').value = alias || '';
+        document.querySelector('[name="telefono"]').value = telefono || '';
+        document.querySelector('[name="calle"]').value = calle || '';
+        document.querySelector('[name="colonia"]').value = colonia || '';
+        document.querySelector('[name="ciudad"]').value = ciudad || 'Mérida';
+        document.querySelector('[name="estado_mx"]').value = estado || 'Yucatán';
+        document.querySelector('[name="codigo_postal"]').value = cp || '';
+        document.querySelector('[name="referencias"]').value = refs || '';
+        document.querySelector('[name="predetermina"]').checked = predetermina;
+    };
+    
+    // Cerrar modal
+    window.closeDireccionModal = function() {
+        document.getElementById('direccion-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    };
+    
+    // Guardar dirección (AJAX POST)
+    document.getElementById('direccion-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Limpiar errores previos
+        document.querySelectorAll('[id^="err-"]').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
+        
+        const payload = {
+            id: document.getElementById('dir-id').value || null,
+            alias: document.querySelector('[name="alias"]').value.trim(),
+            telefono: document.querySelector('[name="telefono"]').value.trim(),
+            calle: document.querySelector('[name="calle"]').value.trim(),
+            colonia: document.querySelector('[name="colonia"]').value.trim(),
+            ciudad: document.querySelector('[name="ciudad"]').value.trim(),
+            estado_mx: document.querySelector('[name="estado_mx"]').value.trim(),
+            codigo_postal: document.querySelector('[name="codigo_postal"]').value.trim(),
+            referencias: document.querySelector('[name="referencias"]').value.trim(),
+            predetermina: document.querySelector('[name="predetermina"]').checked,
+        };
+        
+        // Obtener el CSRF Token
+        const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+        
+        try {
+            const res = await fetch(SAVE_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            const data = await res.json();
+            if (data.ok) {
+                // Éxito: recargar para refrescar la lista
+                window.location.reload();
+            } else {
+                // Errores de validación
+                if (data.campos) {
+                    for (const [campo, msg] of Object.entries(data.campos)) {
+                        const errEl = document.getElementById(`err-${campo}`);
+                        if (errEl) {
+                            errEl.textContent = msg;
+                            errEl.classList.remove('hidden');
+                        }
+                    }
+                } else {
+                    alert(data.error || 'Error al guardar dirección.');
+                }
+            }
+        } catch (err) {
+            alert('Error de conexión. Intenta de nuevo.');
+        }
+    });
+    
+    // Establecer favorita / predeterminada
+    window.setPredeterminada = async function(id) {
+        const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+        try {
+            const res = await fetch(DEFAULT_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ id })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Error al establecer favorita.');
+            }
+        } catch (err) {
+            alert('Error de conexión.');
+        }
+    };
+    
+    // Eliminar dirección
+    window.eliminarDireccion = async function(id) {
+        if (!confirm('¿Estás seguro de que deseas eliminar esta dirección?')) return;
+        
+        const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+        try {
+            const res = await fetch(DELETE_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ id })
+            });
+            const data = await res.json();
+            if (data.ok) {
+                // Animación de salida antes de remover
+                const card = document.getElementById(`direccion-card-${id}`);
+                if (card) {
+                    card.style.opacity = '0';
+                    card.style.transform = 'scale(0.9)';
+                    setTimeout(() => {
+                        card.remove();
+                        // Si ya no quedan direcciones, recargar para mostrar el empty state
+                        const container = document.getElementById('direcciones-container');
+                        if (container && container.children.length === 0) {
+                            window.location.reload();
+                        }
+                    }, 300);
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                alert(data.error || 'Error al eliminar la dirección.');
+            }
+        } catch (err) {
+            alert('Error de conexión.');
+        }
+    };
 })();
 </script>
 {% endblock %}

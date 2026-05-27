@@ -1,0 +1,179 @@
+"""
+Formularios del Panel de Administración — Gestión de Clientes.
+"""
+from django import forms
+from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+
+User = get_user_model()
+
+
+class EditarClienteForm(forms.ModelForm):
+    """
+    Formulario para editar un usuario existente.
+    No toca la contraseña — eso se maneja por separado si hace falta.
+    Solo superusuarios pueden activar is_staff / is_superuser.
+    """
+
+    class Meta:
+        model  = User
+        fields = [
+            'username', 'first_name', 'last_name',
+            'email', 'is_active', 'is_staff', 'is_superuser',
+        ]
+        labels = {
+            'username':     'Usuario',
+            'first_name':   'Nombre',
+            'last_name':    'Apellido',
+            'email':        'Correo electrónico',
+            'is_active':    'Cuenta activa',
+            'is_staff':     'Acceso al panel (staff)',
+            'is_superuser': 'Superusuario',
+        }
+        help_texts = {
+            'is_staff':     'Permite acceder al Panel de Administración.',
+            'is_superuser': 'Todos los permisos sin restricción.',
+            'username':     '',
+        }
+        widgets = {
+            'username':   forms.TextInput(attrs={'autocomplete': 'off'}),
+            'first_name': forms.TextInput(),
+            'last_name':  forms.TextInput(),
+            'email':      forms.EmailInput(),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip()
+        qs = User.objects.filter(email=email).exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError('Ya existe un usuario con este correo.')
+        return email
+
+
+class CrearClienteForm(forms.ModelForm):
+    """
+    Formulario para crear un nuevo usuario desde el panel admin.
+    Incluye campos de contraseña con confirmación.
+    """
+    password1 = forms.CharField(
+        label='Contraseña',
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+        help_text='Mínimo 8 caracteres.',
+    )
+    password2 = forms.CharField(
+        label='Confirmar contraseña',
+        widget=forms.PasswordInput(attrs={'autocomplete': 'new-password'}),
+    )
+
+    class Meta:
+        model  = User
+        fields = [
+            'username', 'first_name', 'last_name',
+            'email', 'is_active', 'is_staff', 'is_superuser',
+        ]
+        labels = {
+            'username':     'Usuario',
+            'first_name':   'Nombre',
+            'last_name':    'Apellido',
+            'email':        'Correo electrónico',
+            'is_active':    'Cuenta activa',
+            'is_staff':     'Acceso al panel (staff)',
+            'is_superuser': 'Superusuario',
+        }
+        help_texts = {
+            'username':     '',
+            'is_staff':     'Permite acceder al Panel de Administración.',
+            'is_superuser': 'Todos los permisos sin restricción.',
+        }
+        widgets = {
+            'username':   forms.TextInput(attrs={'autocomplete': 'off'}),
+            'first_name': forms.TextInput(),
+            'last_name':  forms.TextInput(),
+            'email':      forms.EmailInput(),
+        }
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email', '').strip()
+        if email and User.objects.filter(email=email).exists():
+            raise ValidationError('Ya existe un usuario con este correo.')
+        return email
+
+    def clean_password1(self):
+        password = self.cleaned_data.get('password1')
+        if password:
+            validate_password(password)
+        return password
+
+    def clean(self):
+        cleaned = super().clean()
+        p1 = cleaned.get('password1')
+        p2 = cleaned.get('password2')
+        if p1 and p2 and p1 != p2:
+            self.add_error('password2', 'Las contraseñas no coinciden.')
+        return cleaned
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data['password1'])
+        if commit:
+            user.save()
+        return user
+
+
+# ════════════════════════════════════════════════════════════════════════
+# PRODUCTOS — Inventario
+# ════════════════════════════════════════════════════════════════════════
+
+from catalogo.models import Categoria, Producto
+
+
+class ProductoForm(forms.ModelForm):
+    """
+    Formulario para crear y editar productos desde el panel admin.
+    La compresión WebP la maneja el propio model.save().
+    """
+
+    class Meta:
+        model  = Producto
+        fields = [
+            'nombre', 'categoria', 'descripcion',
+            'precio', 'stock',
+            'imagen', 'disponible', 'destacado',
+        ]
+        labels = {
+            'nombre':      'Nombre del producto',
+            'categoria':   'Categoría',
+            'descripcion': 'Descripción',
+            'precio':      'Precio (MXN)',
+            'stock':       'Stock (unidades)',
+            'imagen':      'Imagen del producto',
+            'disponible':  'Disponible en tienda',
+            'destacado':   'Producto destacado',
+        }
+        help_texts = {
+            'imagen':     'La imagen se comprimirá y convertirá a WebP automáticamente.',
+            'destacado':  'Aparece en las OFERTAS ESPECIALES de la página de inicio y en la sección de destacados.',
+            'disponible': 'Desactívalo para ocultarlo del catálogo sin eliminarlo.',
+            'stock':      'Pon 0 si no llevas control de inventario.',
+        }
+        widgets = {
+            'nombre':      forms.TextInput(),
+            'descripcion': forms.Textarea(attrs={'rows': 3}),
+            'precio':      forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'stock':       forms.NumberInput(attrs={'min': '0'}),
+            'categoria':   forms.Select(),
+        }
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data.get('nombre', '').strip()
+        if not nombre:
+            raise ValidationError('El nombre no puede estar vacío.')
+        return nombre
+
+    def clean_precio(self):
+        precio = self.cleaned_data.get('precio')
+        if precio is not None and precio < 0:
+            raise ValidationError('El precio no puede ser negativo.')
+        return precio
+

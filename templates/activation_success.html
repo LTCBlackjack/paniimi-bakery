@@ -1,0 +1,194 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Cuenta Activada! — Panimii Bakery</title>
+    <meta name="description" content="Tu cuenta de Paniimi Bakery ha sido activada con éxito.">
+
+    <!-- Google Fonts: Playfair Display + Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary:   '#000000',
+                        secondary: '#4A4A4A',
+                        neutral:   '#F9F9F9',
+                        surface:   '#FFFFFF',
+                        cream:     '#E8E3DD',
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+                        sans:  ['"Inter"', 'system-ui', 'sans-serif'],
+                    },
+                },
+            },
+        }
+    </script>
+
+    <style>
+        /* ── Animación de apertura de libro ─────────────────────── */
+        #panel-left {
+            transform: translateX(-100%);
+            opacity: 0;
+            transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity   0.5s  ease;
+        }
+        #panel-right {
+            transform: translateX(100%);
+            opacity: 0;
+            transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+                        opacity   0.5s  ease;
+        }
+        /* Clase que el JS añade 60ms después del load */
+        .book-open #panel-left,
+        .book-open #panel-right {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        /* El panel derecho entra 80ms más tarde (efecto asimétrico) */
+        .book-open #panel-right {
+            transition-delay: 80ms;
+        }
+
+        /* ── Scrollbar oculta en el panel derecho en móvil ───────── */
+        .scroll-hidden::-webkit-scrollbar { display: none; }
+        .scroll-hidden { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+
+<body class="overflow-hidden">
+
+<div class="flex h-screen w-screen overflow-hidden" id="book-container">
+
+    <!-- ══ PANEL IZQUIERDO — Imagen editorial ══════════════════ -->
+    <div id="panel-left"
+         class="hidden lg:flex flex-col justify-end w-1/2 h-full relative overflow-hidden"
+         style="background-color: #E8E3DD;">
+
+        <!-- Imagen de fondo -->
+        <img
+            src="{% static 'img/oso_comiendo_galleta.webp' %}"
+            alt="Oso polar comiendo galleta feliz"
+            class="absolute inset-0 w-full h-full object-cover"
+            style="mix-blend-mode: multiply; opacity: 0.92;"
+        >
+
+        <!-- Overlay gradiente inferior -->
+        <div class="absolute inset-0 bg-gradient-to-t from-[#c4bdb4]/80 via-transparent to-transparent"></div>
+
+        <!-- Frase editorial -->
+        <div class="relative z-10 p-10 pb-12">
+            <p class="font-serif italic text-2xl lg:text-3xl text-primary/90 leading-snug max-w-xs">
+                "¡Cuenta Activada!"
+            </p>
+        </div>
+    </div>
+
+
+    <!-- ══ PANEL DERECHO — Éxito ═══════════════════════════════ -->
+    <div id="panel-right"
+         class="flex flex-col w-full lg:w-1/2 h-full overflow-y-auto scroll-hidden"
+         style="background-color: #F7F4F0;">
+
+        <!-- Barra superior: volver a la tienda -->
+        <div class="flex justify-end px-8 pt-6 pb-4">
+            <a href="{% url 'home' %}"
+               class="font-sans text-xs text-secondary/50 hover:text-primary transition-colors duration-200 tracking-wide">
+                Volver a la tienda
+            </a>
+        </div>
+
+        <!-- Contenido centrado verticalmente -->
+        <div class="flex-1 flex flex-col justify-center px-10 sm:px-16 lg:px-20 py-8 max-w-md mx-auto w-full">
+
+            <!-- Logo pequeño -->
+            <div class="mb-10">
+                <a href="{% url 'home' %}"
+                   class="inline-block bg-primary text-white font-serif text-sm font-bold
+                          tracking-widest px-4 py-3 uppercase">
+                    PANIIMI<br>
+                    <span class="font-sans font-normal text-[9px] tracking-[0.3em] opacity-70">BAKERY</span>
+                </a>
+            </div>
+
+            <!-- Icono de éxito editorial -->
+            <div class="w-12 h-12 bg-primary text-white flex items-center justify-center mb-6 rounded-none">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+            </div>
+
+            <!-- Título -->
+            {% if exito %}
+                <div class="flex items-start gap-3 mb-4">
+                    <h1 class="font-serif italic text-4xl font-normal text-primary leading-none">
+                        ¡Bienvenido a Paniimi!
+                    </h1>
+                </div>
+                <p class="font-sans text-sm text-secondary/70 mb-8 leading-relaxed">
+                    Tu cuenta ha sido activada con éxito. Ya puedes iniciar sesión para empezar a acumular tus puntos de lealtad y realizar compras de manera mucho más rápida.
+                </p>
+
+                <!-- Botones -->
+                <div>
+                    <a href="{% url 'login' %}"
+                       class="inline-block w-full text-center bg-primary text-white font-sans text-xs font-semibold
+                              tracking-[0.25em] uppercase py-4
+                              hover:opacity-80 active:opacity-100
+                              transition-opacity duration-200">
+                        Iniciar Sesión
+                    </a>
+                </div>
+            {% else %}
+                <div class="flex items-start gap-3 mb-4">
+                    <h1 class="font-serif italic text-4xl font-normal text-red-600 leading-none">
+                        Enlace Inválido
+                    </h1>
+                </div>
+                <p class="font-sans text-sm text-secondary/70 mb-8 leading-relaxed">
+                    El enlace de activación es inválido o ha caducado. Si ya activaste tu cuenta anteriormente, puedes intentar iniciar sesión.
+                </p>
+
+                <!-- Botones -->
+                <div class="space-y-4">
+                    <a href="{% url 'login' %}"
+                       class="inline-block w-full text-center bg-primary text-white font-sans text-xs font-semibold
+                              tracking-[0.25em] uppercase py-4
+                              hover:opacity-80 active:opacity-100
+                              transition-opacity duration-200">
+                        Iniciar Sesión
+                    </a>
+                    <a href="{% url 'registro' %}"
+                       class="inline-block w-full text-center border border-zinc-300 text-secondary font-sans text-xs font-semibold
+                              tracking-[0.25em] uppercase py-4 hover:border-primary hover:text-primary
+                              transition-colors duration-200">
+                        Crear Cuenta Nueva
+                    </a>
+                </div>
+            {% endif %}
+
+        </div><!-- /flex-1 -->
+    </div><!-- /panel-right -->
+
+</div><!-- /book-container -->
+
+<!-- ── Script: Animación apertura de libro ─────────────────── -->
+<script>
+    requestAnimationFrame(function () {
+        setTimeout(function () {
+            document.getElementById('book-container').classList.add('book-open');
+        }, 60);
+    });
+</script>
+
+</body>
+</html>

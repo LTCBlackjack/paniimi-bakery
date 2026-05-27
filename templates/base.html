@@ -18,12 +18,11 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    /* ── DESIGN.md › colors ── */
                     colors: {
-                        primary:   '#000000',  /* Negro puro — títulos, logo, botones */
-                        secondary: '#4A4A4A',  /* Gris oscuro — subtítulos           */
-                        neutral:   '#F9F9F9',  /* Gris extra claro — fondos alternos */
-                        surface:   '#FFFFFF',  /* Blanco puro — fondo principal      */
+                        primary:   'var(--color-primary)',  /* Negro puro / dinámico */
+                        secondary: 'var(--color-secondary)',  /* Gris oscuro / dinámico */
+                        neutral:   'var(--color-neutral)',  /* Gris extra claro / dinámico */
+                        surface:   '#FFFFFF',  /* Blanco puro — fondo principal */
                     },
                     /* ── DESIGN.md › typography ── */
                     fontFamily: {
@@ -62,6 +61,37 @@
 
     <!-- ── Estilos base editoriales ── -->
     <style type="text/tailwindcss">
+        :root {
+            --color-primary: #000000;
+            --color-secondary: #4A4A4A;
+            --color-neutral: #F9F9F9;
+        }
+        .theme-original {
+            --color-primary: #000000;
+            --color-secondary: #4A4A4A;
+            --color-neutral: #F9F9F9;
+        }
+        .theme-primavera {
+            --color-primary: #4A6B53;  /* Sage Green */
+            --color-secondary: #6B7C70;
+            --color-neutral: #F4F6F4;
+        }
+        .theme-verano {
+            --color-primary: #8C4730;  /* Terracotta */
+            --color-secondary: #A36A58;
+            --color-neutral: #FAF8F6;
+        }
+        .theme-otono {
+            --color-primary: #5A2A27;  /* Burgundy */
+            --color-secondary: #7F5552;
+            --color-neutral: #FAF4F4;
+        }
+        .theme-invierno {
+            --color-primary: #1C333E;  /* Slate Blue */
+            --color-secondary: #435A66;
+            --color-neutral: #F2F5F7;
+        }
+
         /* Reset global a la tipografía del DESIGN.md */
         body {
             @apply font-sans text-body text-secondary bg-surface antialiased;
@@ -112,7 +142,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 
-<body class="flex flex-col min-h-screen">
+<body class="theme-{{ temporada_activa|default:'original' }} flex flex-col min-h-screen">
 
     <!-- ════════════════════════════════════════════════════════════════
          NAVBAR — Minimalista editorial
@@ -148,7 +178,7 @@
                 <!-- Links principales (siempre visibles) -->
                 <li><a href="{% url 'home' %}" class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Inicio</a></li>
                 <li><a href="{% url 'catalogo:lista' %}" class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Catálogo</a></li>
-                <li><a href="#" class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Nosotros</a></li>
+                <li><a href="{% url 'nosotros' %}" class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Nosotros</a></li>
                 <li><a href="{% url 'contacto' %}" class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Contacto</a></li>
 
                 <!-- Separador visual (solo desktop) -->
@@ -156,6 +186,23 @@
 
                 {% if user.is_authenticated %}
                     <!-- Usuario autenticado: nombre + Cerrar Sesión -->
+
+                    <!-- Acceso rápido al Panel (solo staff/superusuario) -->
+                    {% if user.is_staff or user.is_superuser %}
+                    <li>
+                        <a href="{% url 'panel_admin:resumen' %}"
+                           class="flex items-center gap-1.5 py-4 md:py-0
+                                  font-sans text-xs font-semibold tracking-widest uppercase
+                                  bg-primary text-white px-3 py-1.5
+                                  hover:opacity-80 transition-opacity duration-200">
+                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                            </svg>
+                            Panel Admin
+                        </a>
+                    </li>
+                    {% endif %}
+
                     <li><a href="{% url 'dashboard' %}"
                            class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">
                         {{ user.username }}
@@ -247,7 +294,7 @@
                     <ul class="space-y-2 text-sm">
                         <li><a href="{% url 'home' %}" class="text-white/70 hover:text-white transition-colors duration-200">Inicio</a></li>
                         <li><a href="{% url 'catalogo:lista' %}" class="text-white/70 hover:text-white transition-colors duration-200">Catálogo</a></li>
-                        <li><a href="#" class="text-white/70 hover:text-white transition-colors duration-200">Nosotros</a></li>
+                        <li><a href="{% url 'nosotros' %}" class="text-white/70 hover:text-white transition-colors duration-200">Nosotros</a></li>
                         <li><a href="{% url 'contacto' %}" class="text-white/70 hover:text-white transition-colors duration-200">Contacto</a></li>
                     </ul>
                 </div>
@@ -256,8 +303,8 @@
                 <div>
                     <h4 class="font-sans text-xs font-semibold tracking-widest uppercase text-white/40 mb-4">Contacto</h4>
                     <ul class="space-y-2 text-sm text-white/70">
-                        <li>contacto@paniimi.com</li>
-                        <li>Monterrey, N.L., México</li>
+                        <li>contacto@paniimi.com(PRÓXIMAMENTE)</li>
+                        <li>Mérida,Yucatán México</li>
                     </ul>
                 </div>
 

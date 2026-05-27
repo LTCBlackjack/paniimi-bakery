@@ -1,0 +1,205 @@
+{% extends "panel_admin/admin_base.html" %}
+
+{% block title %}Inventario{% endblock %}
+{% block page_title %}Inventario de Productos{% endblock %}
+
+{% block content %}
+
+<!-- Barra de herramientas -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 animate-fade-in-up">
+
+    <!-- Búsqueda + filtro -->
+    <form method="GET" class="flex flex-wrap items-center gap-2 flex-1">
+        <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-accent-muted"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+            </svg>
+            <input id="busqueda-producto" type="text" name="q" value="{{ busqueda }}"
+                   placeholder="Buscar producto…"
+                   class="pl-9 pr-4 py-2 text-sm border border-zinc-200 bg-admin-card
+                          focus:outline-none focus:border-primary transition-colors w-52">
+        </div>
+
+        <!-- Filtro disponible -->
+        <select name="disponible"
+                onchange="this.form.submit()"
+                class="py-2 px-3 text-sm border border-zinc-200 bg-admin-card
+                       focus:outline-none focus:border-primary transition-colors">
+            <option value="">Todos</option>
+            <option value="1" {% if filtro_disp == '1' %}selected{% endif %}>Disponibles</option>
+            <option value="0" {% if filtro_disp == '0' %}selected{% endif %}>No disponibles</option>
+        </select>
+
+        <button type="submit" class="btn-admin">Buscar</button>
+        {% if busqueda or filtro_disp %}
+        <a href="{% url 'panel_admin:inventario' %}" class="btn-admin-outline">✕</a>
+        {% endif %}
+    </form>
+
+    <!-- Botón nuevo producto -->
+    <a href="{% url 'panel_admin:crear_producto' %}" id="btn-nuevo-producto"
+       class="btn-admin flex items-center gap-2 whitespace-nowrap">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nuevo Producto
+    </a>
+</div>
+
+<!-- Tabla de inventario -->
+<div class="bg-admin-card border border-zinc-200 animate-fade-in-up" style="animation-delay:60ms">
+    <div class="px-6 py-4 border-b border-zinc-100 flex items-center justify-between">
+        <h3 class="font-serif text-base font-bold text-primary">
+            {% if busqueda %}Resultados: "{{ busqueda }}"
+            {% else %}Catálogo Completo{% endif %}
+            <span class="ml-2 text-sm font-sans font-normal text-accent-muted">({{ productos|length }})</span>
+        </h3>
+    </div>
+
+    {% if productos %}
+    <div class="overflow-x-auto">
+        <table class="admin-table w-full">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Código</th>
+                    <th>Categoría</th>
+                    <th class="text-right">Precio</th>
+                    <th class="text-center">Stock</th>
+                    <th class="text-center">Disponible</th>
+                    <th class="text-center">Destacado</th>
+                    <th>Actualizado</th>
+                    <th class="text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for producto in productos %}
+                <tr>
+                    <!-- Imagen + nombre -->
+                    <td>
+                        <div class="flex items-center gap-3">
+                            {% if producto.imagen %}
+                            <img src="{{ producto.imagen.url }}"
+                                 alt="{{ producto.nombre }}"
+                                 class="w-12 h-12 object-cover flex-shrink-0 border border-zinc-100">
+                            {% else %}
+                            <div class="w-12 h-12 bg-neutral flex items-center justify-center
+                                        flex-shrink-0 border border-zinc-100">
+                                <svg class="w-5 h-5 text-accent-muted/40" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            {% endif %}
+                            <span class="font-medium text-primary text-sm">{{ producto.nombre }}</span>
+                        </div>
+                    </td>
+
+                    <!-- Código de producto -->
+                    <td>
+                        <span class="font-mono text-xs tracking-wider bg-neutral px-2 py-1
+                                    border border-zinc-200 text-secondary select-all">
+                            {{ producto.codigo }}
+                        </span>
+                    </td>
+
+                    <td class="text-accent-muted text-sm">{{ producto.categoria.nombre }}</td>
+
+                    <td class="text-right font-semibold text-sm">${{ producto.precio|floatformat:2 }}</td>
+
+                    <!-- Stock con semáforo visual -->
+                    <td class="text-center">
+                        <span class="font-semibold text-sm
+                            {% if producto.stock == 0 %}text-stat-rose
+                            {% elif producto.stock <= 5 %}text-stat-amber
+                            {% else %}text-stat-green{% endif %}">
+                            {{ producto.stock }}
+                        </span>
+                    </td>
+
+                    <td class="text-center">
+                        {% if producto.disponible %}
+                        <span class="badge badge-entregada">Sí</span>
+                        {% else %}
+                        <span class="badge badge-cancelada">No</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-center">
+                        {% if producto.destacado %}
+                        <span class="text-stat-amber text-base">★</span>
+                        {% else %}
+                        <span class="text-accent-muted/20 text-base">★</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="text-accent-muted text-sm">{{ producto.actualizado|date:"d M Y" }}</td>
+
+                    <!-- Acciones -->
+                    <td class="text-right">
+                        <div class="flex items-center justify-end gap-2">
+                            <a href="{% url 'panel_admin:editar_producto' producto.pk %}"
+                               id="btn-editar-prod-{{ producto.pk }}"
+                               class="inline-flex items-center gap-1 btn-admin-outline px-3 py-1.5 text-xs">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                     stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                Editar
+                            </a>
+                            <a href="{% url 'panel_admin:eliminar_producto' producto.pk %}"
+                               id="btn-eliminar-prod-{{ producto.pk }}"
+                               class="inline-flex items-center gap-1 btn-admin-outline px-3 py-1.5 text-xs
+                                      border-red-200 text-red-500 hover:border-red-500 hover:text-red-600">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24"
+                                     stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Eliminar
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% else %}
+    <div class="py-16 flex flex-col items-center gap-3 text-accent-muted">
+        <svg class="w-12 h-12 opacity-30" fill="none" viewBox="0 0 24 24"
+             stroke="currentColor" stroke-width="1">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+        </svg>
+        {% if busqueda %}
+        <p class="text-sm font-medium">Sin resultados para "{{ busqueda }}"</p>
+        <a href="{% url 'panel_admin:inventario' %}" class="btn-admin mt-2">Ver todos</a>
+        {% else %}
+        <p class="text-sm font-medium">No hay productos en el catálogo</p>
+        <a href="{% url 'panel_admin:crear_producto' %}" class="btn-admin mt-2">Añadir el primero</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<!-- Leyenda de stock -->
+<div class="mt-4 flex items-center gap-6 text-xs text-accent-muted animate-fade-in-up"
+     style="animation-delay:120ms">
+    <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-stat-green inline-block"></span> Stock &gt; 5
+    </span>
+    <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-stat-amber inline-block"></span> Stock 1–5
+    </span>
+    <span class="flex items-center gap-1.5">
+        <span class="w-2 h-2 rounded-full bg-stat-rose inline-block"></span> Sin stock (0)
+    </span>
+</div>
+
+{% endblock %}

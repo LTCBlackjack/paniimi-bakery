@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmación de Pedido — Paniimi Bakery</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #F7F4F0; font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; color: #4A4A4A; -webkit-font-smoothing: antialiased;">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F7F4F0; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px; background-color: #FFFFFF; border: 1px solid #E8E3DD; padding: 40px;">
+                    
+                    <!-- Logo de la Marca -->
+                    <tr>
+                        <td align="left" style="padding-bottom: 30px;">
+                            <div style="display: inline-block; background-color: #000000; color: #FFFFFF; padding: 12px 16px; font-family: 'Georgia', 'Times New Roman', serif; font-size: 14px; font-weight: bold; letter-spacing: 0.2em; text-transform: uppercase; line-height: 1.2; text-align: left;">
+                                PANIIMI<br>
+                                <span style="font-family: sans-serif; font-size: 9px; letter-spacing: 0.3em; opacity: 0.7;">BAKERY</span>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- Título de Éxito -->
+                    <tr>
+                        <td align="left" style="padding-bottom: 10px;">
+                            <h1 style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-style: italic; font-size: 28px; font-weight: normal; color: #000000; line-height: 1.2;">
+                                ¡Gracias por tu compra!
+                            </h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="left" style="padding-bottom: 30px; font-size: 14px; color: #7F7F7F; font-family: sans-serif;">
+                            Pedido Código: <strong style="color: #000000; font-family: monospace; font-size: 15px;">{{ orden.codigo_pedido }}</strong>
+                        </td>
+                    </tr>
+                    
+                    <!-- Mensaje Introductorio -->
+                    <tr>
+                        <td align="left" style="padding-bottom: 25px; font-size: 14px; line-height: 1.6;">
+                            Hola, <strong>{{ orden.cliente.username|default:"Cliente" }}</strong>.
+                            <br><br>
+                            Tu pago con tarjeta de crédito/débito a través de Stripe ha sido confirmado con éxito. Nuestros reposteros ya están listos para preparar tu pedido y entregártelo calientito.
+                        </td>
+                    </tr>
+                    
+                    <!-- Tabla de Productos -->
+                    <tr>
+                        <td align="left" style="padding-bottom: 30px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse: collapse; font-size: 13px;">
+                                <thead>
+                                    <tr style="border-bottom: 2px solid #000000; font-weight: bold; font-family: sans-serif; text-transform: uppercase; letter-spacing: 0.05em;">
+                                        <th align="left" style="padding: 10px 0;">Producto</th>
+                                        <th align="center" style="padding: 10px 0; width: 60px;">Cant.</th>
+                                        <th align="right" style="padding: 10px 0; width: 100px;">Precio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in orden.items.all %}
+                                    <tr style="border-bottom: 1px solid #E8E3DD;">
+                                        <td align="left" style="padding: 14px 0; font-family: 'Georgia', serif; font-size: 14px; color: #000000;">
+                                            {{ item.nombre_producto }}
+                                        </td>
+                                        <td align="center" style="padding: 14px 0; color: #4A4A4A;">
+                                            {{ item.cantidad }}
+                                        </td>
+                                        <td align="right" style="padding: 14px 0; font-weight: bold; color: #000000;">
+                                            ${{ item.subtotal }} MXN
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    
+                                    <!-- Desglose de Envío y Total -->
+                                    <tr>
+                                        <td colspan="2" align="right" style="padding: 15px 0 5px 0; color: #7F7F7F;">Envío (Mérida Local):</td>
+                                        <td align="right" style="padding: 15px 0 5px 0; font-weight: bold; color: #2E7D32;">Gratis</td>
+                                    </tr>
+                                    <tr style="border-top: 1px solid #000000;">
+                                        <td colspan="2" align="right" style="padding: 15px 0; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #000000;">Total Pagado:</td>
+                                        <td align="right" style="padding: 15px 0; font-weight: bold; font-size: 16px; color: #000000;">
+                                            ${{ orden.total }} MXN
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Dirección de Entrega -->
+                    <tr>
+                        <td align="left" style="padding: 25px; background-color: #F9F9F9; border: 1px solid #E8E3DD; margin-bottom: 30px; font-size: 13px; line-height: 1.6;">
+                            <strong style="font-family: sans-serif; font-size: 10px; font-weight: bold; letter-spacing: 0.15em; text-transform: uppercase; color: #7F7F7F; display: block; margin-bottom: 8px;">
+                                Dirección de Envío
+                            </strong>
+                            <strong style="color: #000000; font-size: 14px;">{{ orden.direccion_completa }}</strong>
+                            <br>
+                            <span style="color: #4A4A4A;">Teléfono: {{ orden.telefono }}</span>
+                            {% if orden.referencias %}
+                            <br>
+                            <span style="color: #7F7F7F; font-style: italic;">Referencias: {{ orden.referencias }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    
+                    <!-- Espacio -->
+                    <tr><td style="height: 30px;"></td></tr>
+
+                    <!-- Botón de Seguimiento -->
+                    <tr>
+                        <td align="center" style="padding-bottom: 20px;">
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                                <tr>
+                                    <td align="center" style="background-color: #000000;">
+                                        <a href="{{ protocol }}://{{ domain }}{% url 'orden_exito' pk=orden.pk %}" 
+                                           target="_blank" 
+                                           style="display: block; padding: 16px 28px; font-size: 12px; font-weight: bold; font-family: sans-serif; color: #FFFFFF; text-decoration: none; text-transform: uppercase; letter-spacing: 0.25em; border: 1px solid #000000;">
+                                            Seguir mi pedido en tiempo real
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Pie de página -->
+                    <tr>
+                        <td align="center" style="border-top: 1px solid #E8E3DD; padding-top: 30px; font-size: 11px; color: #9F9F9F; line-height: 1.5; text-align: center;">
+                            Paniimi Bakery · Horneado con paciencia · Mérida, Yucatán, México.<br>
+                            Si tienes alguna duda con tu pedido, puedes contactarnos respondiendo directamente a este correo o escribiendo a soporte@paniimi.com.
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

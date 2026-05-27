@@ -1,0 +1,154 @@
+{% extends "panel_admin/admin_base.html" %}
+
+{% block title %}Detalle Pedido #{{ orden.pk }}{% endblock %}
+{% block page_title %}Detalle de Orden #{{ orden.pk|stringformat:"04d" }}{% endblock %}
+
+{% block content %}
+
+<div class="mb-6 animate-fade-in-up">
+    <a href="{% url 'panel_admin:pedidos' %}"
+       class="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest
+              text-accent-muted hover:text-primary transition-colors duration-200">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver a pedidos
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Columna principal: ítems -->
+    <div class="lg:col-span-2 space-y-6">
+
+        <!-- Ítems de la orden -->
+        <div class="bg-admin-card border border-zinc-200 animate-fade-in-up" style="animation-delay:60ms">
+            <div class="px-6 py-4 border-b border-zinc-100">
+                <h3 class="font-serif text-base font-bold text-primary">Productos</h3>
+            </div>
+            {% if orden.items.all %}
+            <table class="admin-table w-full">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th class="text-center">Cantidad</th>
+                        <th class="text-right">Precio Unit.</th>
+                        <th class="text-right">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in orden.items.all %}
+                    <tr>
+                        <td class="font-medium text-primary">{{ item.nombre_producto }}</td>
+                        <td class="text-center">{{ item.cantidad }}</td>
+                        <td class="text-right">${{ item.precio_unitario|floatformat:2 }}</td>
+                        <td class="text-right font-semibold">${{ item.subtotal|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="text-right font-semibold text-sm py-3 px-4 border-t border-zinc-200">
+                            Total
+                        </td>
+                        <td class="text-right font-serif text-lg font-bold text-primary py-3 px-4 border-t border-zinc-200">
+                            ${{ orden.total|floatformat:2 }}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+            {% else %}
+            <p class="px-6 py-10 text-sm text-accent-muted text-center">Sin ítems registrados.</p>
+            {% endif %}
+        </div>
+
+        <!-- Notas -->
+        {% if orden.notas %}
+        <div class="bg-admin-card border border-zinc-200 px-6 py-5 animate-fade-in-up"
+             style="animation-delay:120ms">
+            <h4 class="text-xs font-semibold uppercase tracking-widest text-accent-muted mb-2">
+                Notas
+            </h4>
+            <p class="text-sm text-secondary leading-relaxed">{{ orden.notas }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Columna lateral: datos del pedido -->
+    <div class="space-y-4">
+
+        <!-- Estado -->
+        <div class="bg-admin-card border border-zinc-200 px-6 py-5 animate-fade-in-up"
+             style="animation-delay:80ms">
+            <h4 class="text-xs font-semibold uppercase tracking-widest text-accent-muted mb-3">
+                Estado del Pedido
+            </h4>
+            <div class="mb-4">
+                <span class="badge badge-{{ orden.estado }} text-sm px-3 py-1">
+                    {{ orden.get_estado_display }}
+                </span>
+            </div>
+            
+            <form method="POST" class="space-y-3 pt-3 border-t border-zinc-100">
+                {% csrf_token %}
+                <div class="flex flex-col gap-1">
+                    <label for="id_estado" class="text-[9px] font-semibold uppercase tracking-widest text-accent-muted">
+                        Cambiar Estado
+                    </label>
+                    <select id="id_estado" name="estado" 
+                            class="w-full border border-zinc-200 p-2 text-xs bg-white text-primary outline-none focus:border-black rounded-none">
+                        {% for valor, texto in estados %}
+                        <option value="{{ valor }}" {% if orden.estado == valor %}selected{% endif %}>
+                            {{ texto }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" 
+                        class="w-full bg-primary text-white font-sans text-[10px] font-semibold tracking-wider uppercase py-2 hover:opacity-90 transition-opacity">
+                    Actualizar Estado
+                </button>
+            </form>
+        </div>
+
+        <!-- Cliente -->
+        <div class="bg-admin-card border border-zinc-200 px-6 py-5 animate-fade-in-up"
+             style="animation-delay:140ms">
+            <h4 class="text-xs font-semibold uppercase tracking-widest text-accent-muted mb-3">
+                Cliente
+            </h4>
+            {% if orden.cliente %}
+            <p class="font-semibold text-primary text-sm">
+                {{ orden.cliente.get_full_name|default:orden.cliente.username }}
+            </p>
+            <p class="text-xs text-accent-muted mt-1">{{ orden.cliente.email }}</p>
+            <p class="text-xs text-accent-muted">Miembro desde {{ orden.cliente.date_joined|date:"d M Y" }}</p>
+            {% else %}
+            <p class="text-sm text-accent-muted italic">
+                {{ orden.email_cliente|default:"Cliente anónimo" }}
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Fechas -->
+        <div class="bg-admin-card border border-zinc-200 px-6 py-5 animate-fade-in-up"
+             style="animation-delay:180ms">
+            <h4 class="text-xs font-semibold uppercase tracking-widest text-accent-muted mb-3">
+                Fechas
+            </h4>
+            <dl class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <dt class="text-accent-muted">Creado</dt>
+                    <dd class="font-medium">{{ orden.creado|date:"d M Y, H:i" }}</dd>
+                </div>
+                <div class="flex justify-between">
+                    <dt class="text-accent-muted">Actualizado</dt>
+                    <dd class="font-medium">{{ orden.actualizado|date:"d M Y, H:i" }}</dd>
+                </div>
+            </dl>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

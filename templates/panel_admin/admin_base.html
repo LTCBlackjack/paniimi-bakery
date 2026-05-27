@@ -1,0 +1,309 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{% block title %}Panel Admin{% endblock %} — Panimii</title>
+
+    <!-- Google Fonts: Playfair Display + Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary:   '#000000',
+                        secondary: '#4A4A4A',
+                        neutral:   '#F9F9F9',
+                        surface:   '#FFFFFF',
+                        /* Admin palette — inverted */
+                        sidebar:   '#0A0A0A',
+                        'admin-bg': '#F4F4F5',
+                        'admin-card': '#FFFFFF',
+                        accent:    '#18181B',
+                        'accent-muted': '#71717A',
+                        'stat-green':  '#16A34A',
+                        'stat-amber':  '#D97706',
+                        'stat-blue':   '#2563EB',
+                        'stat-rose':   '#E11D48',
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'Georgia', 'serif'],
+                        sans:  ['"Inter"', 'system-ui', 'sans-serif'],
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                            '0%':   { opacity: '0', transform: 'translateY(16px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        slideIn: {
+                            '0%':   { opacity: '0', transform: 'translateX(-12px)' },
+                            '100%': { opacity: '1', transform: 'translateX(0)' },
+                        },
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.5s cubic-bezier(0.22,1,0.36,1) both',
+                        'slide-in':   'slideIn 0.4s cubic-bezier(0.22,1,0.36,1) both',
+                    },
+                },
+            },
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        body { @apply font-sans antialiased; }
+
+        /* ── Sidebar link ────────────────────────────────────── */
+        .nav-link {
+            @apply flex items-center gap-3 px-4 py-2.5 rounded text-white/60
+                   text-sm font-medium tracking-wide
+                   transition-all duration-200
+                   hover:bg-white/10 hover:text-white;
+        }
+        .nav-link.active {
+            @apply bg-white/15 text-white;
+        }
+
+        /* ── Metric card ─────────────────────────────────────── */
+        .metric-card {
+            @apply bg-admin-card border border-zinc-200 p-6
+                   flex flex-col gap-2
+                   transition-all duration-300
+                   hover:shadow-lg hover:-translate-y-0.5;
+        }
+
+        /* ── Status badge ────────────────────────────────────── */
+        .badge {
+            @apply inline-flex items-center px-2.5 py-0.5 text-xs font-semibold
+                   tracking-wide uppercase rounded-sm;
+        }
+        .badge-pendiente  { @apply bg-amber-100  text-amber-800; }
+        .badge-pagada     { @apply bg-blue-100   text-blue-800; }
+        .badge-en_proceso { @apply bg-violet-100 text-violet-800; }
+        .badge-enviada    { @apply bg-cyan-100   text-cyan-800; }
+        .badge-entregada  { @apply bg-green-100  text-green-800; }
+        .badge-cancelada  { @apply bg-red-100    text-red-800; }
+
+        /* ── Table ───────────────────────────────────────────── */
+        .admin-table th {
+            @apply text-xs font-semibold uppercase tracking-widest
+                   text-accent-muted bg-admin-bg py-3 px-4 text-left;
+        }
+        .admin-table td {
+            @apply py-3 px-4 text-sm text-secondary border-t border-zinc-100
+                   align-middle;
+        }
+        .admin-table tr:hover td { @apply bg-neutral; }
+
+        /* ── Btn admin ───────────────────────────────────────── */
+        .btn-admin {
+            @apply inline-block bg-primary text-white text-xs font-semibold
+                   tracking-wider uppercase px-4 py-2
+                   transition-all duration-200
+                   hover:opacity-80 hover:-translate-y-0.5;
+        }
+        .btn-admin-outline {
+            @apply inline-block border border-zinc-300 text-secondary text-xs
+                   font-semibold tracking-wider uppercase px-4 py-2
+                   transition-all duration-200
+                   hover:border-primary hover:text-primary;
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-admin-bg text-primary min-h-screen flex">
+
+    <!-- ════════════════════════════════════════════════════════════
+         SIDEBAR — Fondo negro, texto blanco
+         ════════════════════════════════════════════════════════ -->
+    <aside id="sidebar"
+           class="fixed inset-y-0 left-0 z-40 w-64 bg-sidebar flex flex-col
+                  transition-transform duration-300
+                  -translate-x-full lg:translate-x-0">
+
+        <!-- Logo -->
+        <div class="px-6 py-7 border-b border-white/10">
+            <a href="{% url 'panel_admin:resumen' %}"
+               class="font-serif text-xl font-bold tracking-widest text-white">
+                PANIIMI
+            </a>
+            <p class="text-white/30 text-xs mt-1 tracking-wide">Centro de Comando</p>
+        </div>
+
+        <!-- Navegación -->
+        <nav class="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+
+            <!-- Resumen -->
+            <a href="{% url 'panel_admin:resumen' %}"
+               class="nav-link {% if seccion_activa == 'resumen' %}active{% endif %}">
+                <!-- icono: chart -->
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M3 13.5l5-5 4 4 5-6 4 4"/>
+                </svg>
+                Resumen General
+            </a>
+
+            <!-- Pedidos -->
+            <a href="{% url 'panel_admin:pedidos' %}"
+               class="nav-link {% if seccion_activa == 'pedidos' %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Gestión de Pedidos
+            </a>
+
+            <!-- Inventario -->
+            <a href="{% url 'panel_admin:inventario' %}"
+               class="nav-link {% if seccion_activa == 'inventario' %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                Inventario
+            </a>
+
+            <!-- Clientes -->
+            <a href="{% url 'panel_admin:clientes' %}"
+               class="nav-link {% if seccion_activa == 'clientes' %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0"/>
+                </svg>
+                Clientes
+            </a>
+
+            <!-- Estaciones -->
+            <a href="{% url 'panel_admin:estaciones' %}"
+               class="nav-link {% if seccion_activa == 'estaciones' %}active{% endif %}">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707.707M12 8a4 4 0 100 8 4 4 0 000-8z"/>
+                </svg>
+                Estaciones
+            </a>
+        </nav>
+
+        <!-- Footer del sidebar -->
+        <div class="px-6 py-5 border-t border-white/10 space-y-3">
+            <a href="{% url 'home' %}"
+               class="flex items-center gap-2 text-white/40 hover:text-white text-xs
+                      font-medium tracking-wide transition-colors duration-200">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                </svg>
+                Ver Tienda
+            </a>
+            <form method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit"
+                        class="flex items-center gap-2 text-white/40 hover:text-white
+                               text-xs font-medium tracking-wide
+                               transition-colors duration-200 w-full text-left">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                    </svg>
+                    Cerrar Sesión
+                </button>
+            </form>
+        </div>
+    </aside>
+
+    <!-- Overlay móvil -->
+    <div id="sidebar-overlay"
+         class="fixed inset-0 z-30 bg-black/50 hidden lg:hidden"
+         onclick="toggleSidebar()">
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         ÁREA PRINCIPAL
+         ════════════════════════════════════════════════════════ -->
+    <div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
+
+        <!-- Topbar -->
+        <header class="sticky top-0 z-20 bg-admin-card border-b border-zinc-200
+                        flex items-center justify-between px-6 py-4">
+
+            <!-- Hamburger (móvil) -->
+            <button onclick="toggleSidebar()"
+                    class="lg:hidden p-1 text-secondary hover:text-primary transition-colors"
+                    aria-label="Abrir menú">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+
+            <!-- Título de sección -->
+            <h1 class="font-serif text-lg font-bold text-primary tracking-wide">
+                {% block page_title %}Panel de Administración{% endblock %}
+            </h1>
+
+            <!-- Info del admin -->
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-medium text-accent-muted hidden sm:block">
+                    {{ user.get_full_name|default:user.username }}
+                </span>
+                <div class="w-8 h-8 bg-primary rounded-full flex items-center justify-center
+                            text-white text-xs font-bold">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+            </div>
+        </header>
+
+        <!-- Mensajes flash -->
+        {% if messages %}
+        <div class="px-6 pt-4 space-y-2">
+            {% for message in messages %}
+            <div class="flex items-center justify-between gap-4
+                        bg-primary text-white text-sm px-5 py-3
+                        animate-fade-in-up">
+                <span>{{ message }}</span>
+                <button onclick="this.parentElement.remove()"
+                        class="text-white/60 hover:text-white text-lg leading-none">×</button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Contenido -->
+        <main class="flex-1 px-6 py-8">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- Footer admin -->
+        <footer class="border-t border-zinc-200 px-6 py-4 text-center">
+            <p class="text-xs text-accent-muted tracking-wide">
+                Panimii Bakery · Panel de Administración · {% now "Y" %}
+            </p>
+        </footer>
+    </div>
+
+    <!-- Script: Sidebar móvil -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const isOpen  = !sidebar.classList.contains('-translate-x-full');
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            }
+        }
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
