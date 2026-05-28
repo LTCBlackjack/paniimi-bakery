@@ -533,4 +533,32 @@ def descargar_llave(request, uidb64, token):
         return redirect('panel_admin:verificar_llave')
 
 
+@staff_member_required(login_url='/auth/login/')
+def descargar_llave_directa(request):
+    """
+    Descarga directa del archivo .key sin necesidad de correo electrónico.
+    Solo accesible para administradores autenticados.
+    """
+    from django.http import HttpResponse
+    from django.conf import settings
+    import hmac
+    import hashlib
 
+    user = request.user
+    username = user.username
+
+    # Generar firma única HMAC-SHA256
+    msg = f"{username}:admin-key"
+    signature = hmac.new(
+        settings.SECRET_KEY.encode(),
+        msg.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    # Construir contenido del archivo .key
+    file_content = f"{username}:{signature}"
+
+    # Devolver como archivo adjunto descargable (.key)
+    response = HttpResponse(file_content, content_type='text/plain')
+    response['Content-Disposition'] = f'attachment; filename="paniimi_key_{username}.key"'
+    return response

@@ -32,4 +32,5 @@ urlpatterns = [
     path('verificar-llave/', views.verificar_llave, name='verificar_llave'),
     path('solicitar-llave/', views.solicitar_llave, name='solicitar_llave'),
     path('descargar-llave/<str:uidb64>/<str:token>/', views.descargar_llave, name='descargar_llave'),
+    path('descargar-llave-directa/', views.descargar_llave_directa, name='descargar_llave_directa'),
 ]
