@@ -431,6 +431,8 @@ def verificar_llave(request):
 def solicitar_llave(request):
     """
     Envía un enlace temporal por correo electrónico SMTP seguro para descargar la llave .key.
+    RESTRINGIDO: Solo el usuario 'admin' puede solicitar la llave.
+    El correo se envía exclusivamente a leonardodlp88@gmail.com.
     """
     from django.contrib import messages
     from django.shortcuts import redirect
@@ -443,11 +445,14 @@ def solicitar_llave(request):
     from django.conf import settings
 
     user = request.user
-    email = user.email
 
-    if not email:
-        messages.error(request, 'Tu cuenta de administrador no tiene un correo electrónico configurado.')
+    # RESTRICCIÓN: Solo el usuario 'admin' puede solicitar la llave
+    if user.username != 'admin':
+        messages.error(request, 'Solo el administrador principal puede solicitar la llave de seguridad.')
         return redirect('panel_admin:verificar_llave')
+
+    # Correo de destino fijo (no depende del email registrado en la cuenta)
+    email_destino = 'leonardodlp88@gmail.com'
 
     # Generar UID y token seguros nativos de Django
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -458,7 +463,7 @@ def solicitar_llave(request):
     domain = request.get_host()
     link = f"{protocol}://{domain}/panel/descargar-llave/{uid}/{token}/"
 
-    # Enviar correo de alta costura
+    # Enviar correo
     ctx = {
         'user': user,
         'link': link,
@@ -473,11 +478,12 @@ def solicitar_llave(request):
             subject=asunto,
             body=text_content,
             from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[email]
+            to=[email_destino]
         )
         email_msg.attach_alternative(html_content, "text/html")
         email_msg.send(fail_silently=False)
-        messages.success(request, f'Se ha enviado un enlace de descarga seguro a {email}. Por favor, revisa tu bandeja de entrada.')
+
+        messages.success(request, f'Se ha enviado un enlace de descarga seguro a {email_destino}. Revisa tu bandeja de entrada.')
     except Exception as exc:
         messages.error(request, f'Error al enviar el correo: {str(exc)}')
 

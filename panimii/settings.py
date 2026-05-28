@@ -158,7 +158,7 @@ STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
 #   2. Ve a https://myaccount.google.com/apppasswords
 #   3. Genera una "Contraseña de aplicación" y pégala en EMAIL_HOST_PASSWORD.
 # ════════════════════════════════════════════════════════════════════════
-EMAIL_BACKEND      = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND      = 'panimii.email_backend.CpanelSafeEmailBackend'
 EMAIL_HOST         = os.getenv('EMAIL_HOST',         'smtp.gmail.com')
 EMAIL_PORT         = int(os.getenv('EMAIL_PORT',     '587'))
 EMAIL_USE_TLS      = os.getenv('EMAIL_USE_TLS',      'True') == 'True'
