@@ -1,28 +1,47 @@
 """
-Backend de correo personalizado para Paniimi Bakery.
+Backend de correo para Paniimi Bakery en hosting compartido (cPanel).
 
-Soluciona el problema de certificados SSL en servidores compartidos (cPanel)
-donde el certificado del proxy no coincide con smtp.gmail.com, causando:
-    [SSL: CERTIFICATE_VERIFY_FAILED] hostname mismatch
+El servidor tiene un proxy/firewall que intercepta las conexiones SMTP
+en el puerto 587 (STARTTLS) y presenta un certificado SSL propio que
+no coincide con smtp.gmail.com, causando CERTIFICATE_VERIFY_FAILED.
 
-Este backend crea un contexto SSL que no verifica el hostname del certificado,
-permitiendo que la conexion SMTP funcione a traves del proxy del hosting.
+Solucion: usar el puerto 465 con SSL directo (SMTPS) y un contexto
+SSL que no verifique el hostname del certificado. Esto establece la
+conexion cifrada desde el inicio, evitando el proxy STARTTLS.
 """
 import ssl
+import smtplib
 from django.core.mail.backends.smtp import EmailBackend as SmtpEmailBackend
 
 
 class CpanelSafeEmailBackend(SmtpEmailBackend):
     """
-    Backend SMTP que relaja la verificacion SSL para funcionar
-    en servidores compartidos con proxies SMTP intermedios.
+    Backend SMTP que fuerza conexion SSL directa en puerto 465
+    con verificacion de certificado relajada.
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Crear un contexto SSL que NO verifique el hostname del certificado
-        # Esto es necesario porque el proxy del hosting presenta su propio
-        # certificado en lugar del de smtp.gmail.com
-        self.ssl_context = ssl.create_default_context()
-        self.ssl_context.check_hostname = False
-        self.ssl_context.verify_mode = ssl.CERT_NONE
+    def open(self):
+        if self.connection:
+            return False
+
+        # Contexto SSL que no verifica el hostname del certificado
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+
+        try:
+            # Forzar SMTP_SSL en puerto 465 (SSL directo, no STARTTLS)
+            self.connection = smtplib.SMTP_SSL(
+                self.host,
+                465,
+                context=context,
+            )
+
+            # Autenticarse con Gmail
+            if self.username and self.password:
+                self.connection.login(self.username, self.password)
+
+            return True
+        except Exception:
+            if not self.fail_silently:
+                raise
