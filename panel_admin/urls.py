@@ -40,4 +40,7 @@ urlpatterns = [
 
     # Diagnóstico (solo admin principal)
     path('diagnostico/email/', views.diagnostico_email, name='diagnostico_email'),
+
+    # Población de Catálogo (solo admin principal)
+    path('inventario/poblar/', views.poblar_catalogo_view, name='poblar_catalogo'),
 ]

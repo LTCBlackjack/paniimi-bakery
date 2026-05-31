@@ -182,7 +182,15 @@
         <a href="{% url 'panel_admin:inventario' %}" class="btn-admin mt-2">Ver todos</a>
         {% else %}
         <p class="text-sm font-medium">No hay productos en el catálogo</p>
-        <a href="{% url 'panel_admin:crear_producto' %}" class="btn-admin mt-2">Añadir el primero</a>
+        <div class="flex flex-wrap items-center gap-3 mt-2">
+            <a href="{% url 'panel_admin:crear_producto' %}" class="btn-admin">Añadir el primero</a>
+            <form method="POST" action="{% url 'panel_admin:poblar_catalogo' %}" class="inline">
+                {% csrf_token %}
+                <button type="submit" class="btn-admin-outline flex items-center gap-1.5 border-amber-200 text-amber-600 hover:border-amber-500 hover:text-amber-700">
+                    <span>🐻</span> Poblar catálogo con datos de prueba
+                </button>
+            </form>
+        </div>
         {% endif %}
     </div>
     {% endif %}

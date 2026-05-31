@@ -679,3 +679,35 @@ def diagnostico_email(request):
         'resultado': resultado,
         'error_detalle': error_detalle,
     })
+
+
+@staff_member_required(login_url='/auth/login/')
+def poblar_catalogo_view(request):
+    """
+    Pobla la base de datos con los datos de prueba del script poblar_catalogo.py.
+    RESTRINGIDO: Solo staff.
+    """
+    from django.contrib import messages
+    from django.shortcuts import redirect
+    import sys
+    import os
+
+    if request.user.username != 'admin':
+        from django.http import HttpResponseForbidden
+        return HttpResponseForbidden('Acceso denegado.')
+
+    if request.method == 'POST':
+        try:
+            # Añadir directorio base al path de python si no está
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            if base_dir not in sys.path:
+                sys.path.append(base_dir)
+            
+            # Importar la función poblar
+            from poblar_catalogo import poblar
+            poblar()
+            messages.success(request, '¡Catálogo poblado con éxito con categorías y productos de prueba! 🐻')
+        except Exception as exc:
+            messages.error(request, f'Error al poblar el catálogo: {exc}')
+        return redirect('panel_admin:inventario')
+    return redirect('panel_admin:inventario')
