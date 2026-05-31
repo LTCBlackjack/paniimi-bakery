@@ -1,5 +1,4 @@
 ---
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/paniimibakery/paniimi_app
-    - /bin/cp -R * 
+    - /bin/cp -Rf . /home/paniimibakery/paniimi_app/
