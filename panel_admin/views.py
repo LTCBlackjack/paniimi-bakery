@@ -630,3 +630,52 @@ def generar_llave_usuario(request, user_id):
     response['Content-Disposition'] = f'attachment; filename="paniimi_key_{username}.key"'
     return response
 
+
+@staff_member_required(login_url='/auth/login/')
+def diagnostico_email(request):
+    """
+    Página de diagnóstico de correo electrónico.
+    Muestra la configuración actual y permite enviar un correo de prueba.
+    RESTRINGIDO: Solo el usuario 'admin'.
+    """
+    from django.http import HttpResponseForbidden, JsonResponse
+    from django.conf import settings
+    from django.core.mail import send_mail
+    import traceback
+
+    if request.user.username != 'admin':
+        return HttpResponseForbidden('Acceso denegado.')
+
+    resultado = None
+    error_detalle = None
+
+    if request.method == 'POST':
+        try:
+            send_mail(
+                subject='🔧 Paniimi Bakery — Correo de Prueba',
+                message='¡Este es un correo de prueba! Si lo recibes, el sistema de correos funciona correctamente.',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[request.POST.get('email_destino', 'leonardodlp88@gmail.com')],
+                fail_silently=False,
+            )
+            resultado = 'success'
+        except Exception as exc:
+            resultado = 'error'
+            error_detalle = f"{type(exc).__name__}: {str(exc)}\n\n{traceback.format_exc()}"
+
+    config = {
+        'EMAIL_BACKEND': getattr(settings, 'EMAIL_BACKEND', 'No configurado'),
+        'EMAIL_HOST': getattr(settings, 'EMAIL_HOST', 'No configurado'),
+        'EMAIL_PORT': getattr(settings, 'EMAIL_PORT', 'No configurado'),
+        'EMAIL_USE_TLS': getattr(settings, 'EMAIL_USE_TLS', 'No configurado'),
+        'EMAIL_USE_SSL': getattr(settings, 'EMAIL_USE_SSL', 'No configurado'),
+        'EMAIL_HOST_USER': getattr(settings, 'EMAIL_HOST_USER', 'No configurado'),
+        'EMAIL_HOST_PASSWORD': '****' + getattr(settings, 'EMAIL_HOST_PASSWORD', '')[-4:] if getattr(settings, 'EMAIL_HOST_PASSWORD', '') else 'VACÍO',
+        'DEFAULT_FROM_EMAIL': getattr(settings, 'DEFAULT_FROM_EMAIL', 'No configurado'),
+    }
+
+    return render(request, 'panel_admin/diagnostico_email.html', {
+        'config': config,
+        'resultado': resultado,
+        'error_detalle': error_detalle,
+    })

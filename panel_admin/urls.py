@@ -37,4 +37,7 @@ urlpatterns = [
     # Gestión de Llaves (solo admin principal)
     path('seguridad/llaves/', views.gestionar_llaves, name='gestionar_llaves'),
     path('seguridad/llaves/<int:user_id>/generar/', views.generar_llave_usuario, name='generar_llave_usuario'),
+
+    # Diagnóstico (solo admin principal)
+    path('diagnostico/email/', views.diagnostico_email, name='diagnostico_email'),
 ]
