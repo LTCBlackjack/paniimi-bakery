@@ -7,7 +7,7 @@ django.setup()
 from catalogo.models import Categoria, Producto
 
 def poblar():
-    print("Iniciando población de catálogo de prueba con Roles y Galletas...")
+    print("Iniciando población de catálogo de prueba con Roles y Cookies...")
 
     # Limpiar catálogo existente
     Producto.objects.all().delete()
@@ -20,12 +20,12 @@ def poblar():
         descripcion="Exquisitos roles recién horneados, suaves y con deliciosas coberturas.",
         orden=1
     )
-    cat_galletas = Categoria.objects.create(
-        nombre="Galletas",
-        descripcion="Galletas artesanales crujientes y suaves por dentro, preparadas con ingredientes selectos.",
+    cat_cookies = Categoria.objects.create(
+        nombre="Cookies",
+        descripcion="Cookies artesanales crujientes por fuera y súper suaves por dentro, preparadas con ingredientes selectos.",
         orden=2
     )
-    print("Categorías 'Roles' y 'Galletas' creadas con éxito.")
+    print("Categorías 'Roles' y 'Cookies' creadas con éxito.")
 
     # 2. Crear Productos - Roles
     p1 = Producto.objects.create(
@@ -56,36 +56,36 @@ def poblar():
         stock=10
     )
 
-    # 3. Crear Productos - Galletas
+    # 3. Crear Productos - Cookies
     p4 = Producto.objects.create(
-        nombre="Galleta de Chispas de Chocolate",
-        descripcion="La clásica galleta dorada por fuera y súper suave por dentro, cargada de abundantes chispas de chocolate semi-amargo.",
+        nombre="Choco Chip Cookie",
+        descripcion="La clásica cookie dorada por fuera y súper masticable por dentro, cargada de abundantes chispas de chocolate semi-amargo.",
         precio=35.00,
-        categoria=cat_galletas,
+        categoria=cat_cookies,
         disponible=True,
         destacado=True,
         stock=25
     )
     p5 = Producto.objects.create(
-        nombre="Galleta Red Velvet",
-        descripcion="Hermosa galleta color rojo aterciopelado con un toque de cocoa y deliciosos trozos de chocolate blanco.",
+        nombre="Red Velvet Cookie",
+        descripcion="Hermosa cookie color rojo aterciopelado con un toque de cocoa y deliciosos trozos de chocolate blanco.",
         precio=38.00,
-        categoria=cat_galletas,
+        categoria=cat_cookies,
         disponible=True,
         destacado=True,
         stock=20
     )
     p6 = Producto.objects.create(
-        nombre="Galleta de Avena y Pasas",
-        descripcion="Galleta rústica y nutritiva elaborada con hojuelas de avena entera, pasas selectas y un toque sutil de canela.",
+        nombre="Oatmeal Raisin Cookie",
+        descripcion="Cookie rústica y nutritiva elaborada con hojuelas de avena entera, pasas selectas y un toque sutil de canela.",
         precio=32.00,
-        categoria=cat_galletas,
+        categoria=cat_cookies,
         disponible=True,
         destacado=False,
         stock=18
     )
 
-    print("Productos de Roles y Galletas creados con éxito.")
+    print("Productos de Roles y Cookies creados con éxito.")
     print("¡Población completada exitosamente!")
 
 if __name__ == '__main__':
