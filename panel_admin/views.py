@@ -542,13 +542,16 @@ def descargar_llave(request, uidb64, token):
 @staff_member_required(login_url='/auth/login/')
 def descargar_llave_directa(request):
     """
-    Descarga directa del archivo .key sin necesidad de correo electrónico.
-    Solo accesible para administradores autenticados.
+    Descarga directa del archivo .key.
+    RESTRINGIDO: Solo el usuario 'admin' puede descargar su propia llave.
     """
-    from django.http import HttpResponse
+    from django.http import HttpResponse, HttpResponseForbidden
     from django.conf import settings
     import hmac
     import hashlib
+
+    if request.user.username != 'admin':
+        return HttpResponseForbidden('Acceso denegado.')
 
     user = request.user
     username = user.username
@@ -568,3 +571,62 @@ def descargar_llave_directa(request):
     response = HttpResponse(file_content, content_type='text/plain')
     response['Content-Disposition'] = f'attachment; filename="paniimi_key_{username}.key"'
     return response
+
+
+@staff_member_required(login_url='/auth/login/')
+def gestionar_llaves(request):
+    """
+    Panel de gestión de llaves de seguridad.
+    RESTRINGIDO: Solo el usuario 'admin' puede ver esta página.
+    Muestra todos los usuarios staff con opción de generar su llave.
+    """
+    from django.http import HttpResponseForbidden
+    from django.contrib.auth import get_user_model
+
+    if request.user.username != 'admin':
+        return HttpResponseForbidden('Acceso denegado.')
+
+    User = get_user_model()
+    staff_users = User.objects.filter(is_staff=True).order_by('-is_superuser', 'username')
+
+    return render(request, 'panel_admin/gestionar_llaves.html', {
+        'staff_users': staff_users,
+    })
+
+
+@staff_member_required(login_url='/auth/login/')
+def generar_llave_usuario(request, user_id):
+    """
+    Genera y descarga el archivo .key para un usuario staff específico.
+    RESTRINGIDO: Solo el usuario 'admin' puede generar llaves.
+    """
+    from django.http import HttpResponse, HttpResponseForbidden
+    from django.conf import settings
+    from django.contrib.auth import get_user_model
+    from django.shortcuts import get_object_or_404
+    import hmac
+    import hashlib
+
+    if request.user.username != 'admin':
+        return HttpResponseForbidden('Acceso denegado.')
+
+    User = get_user_model()
+    target_user = get_object_or_404(User, pk=user_id, is_staff=True)
+    username = target_user.username
+
+    # Generar firma única HMAC-SHA256 para el usuario objetivo
+    msg = f"{username}:admin-key"
+    signature = hmac.new(
+        settings.SECRET_KEY.encode(),
+        msg.encode(),
+        hashlib.sha256
+    ).hexdigest()
+
+    # Construir contenido del archivo .key
+    file_content = f"{username}:{signature}"
+
+    # Devolver como archivo adjunto descargable (.key)
+    response = HttpResponse(file_content, content_type='text/plain')
+    response['Content-Disposition'] = f'attachment; filename="paniimi_key_{username}.key"'
+    return response
+

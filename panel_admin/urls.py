@@ -33,4 +33,8 @@ urlpatterns = [
     path('solicitar-llave/', views.solicitar_llave, name='solicitar_llave'),
     path('descargar-llave/<str:uidb64>/<str:token>/', views.descargar_llave, name='descargar_llave'),
     path('descargar-llave-directa/', views.descargar_llave_directa, name='descargar_llave_directa'),
+
+    # Gestión de Llaves (solo admin principal)
+    path('seguridad/llaves/', views.gestionar_llaves, name='gestionar_llaves'),
+    path('seguridad/llaves/<int:user_id>/generar/', views.generar_llave_usuario, name='generar_llave_usuario'),
 ]
