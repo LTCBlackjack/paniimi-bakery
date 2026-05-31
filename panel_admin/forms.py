@@ -177,3 +177,40 @@ class ProductoForm(forms.ModelForm):
             raise ValidationError('El precio no puede ser negativo.')
         return precio
 
+
+class CategoriaForm(forms.ModelForm):
+    """Formulario para crear y editar categorías desde el panel admin."""
+
+    class Meta:
+        model = Categoria
+        fields = ['nombre', 'descripcion', 'activa', 'orden']
+        labels = {
+            'nombre': 'Nombre de la categoría',
+            'descripcion': 'Descripción',
+            'activa': 'Categoría activa',
+            'orden': 'Orden de aparición (número)',
+        }
+        help_texts = {
+            'activa': 'Las categorías inactivas se ocultan en el catálogo de cara al cliente.',
+            'orden': 'Determina el orden en que se listará en el catálogo (ej. 1, 2, 3...).',
+        }
+        widgets = {
+            'nombre': forms.TextInput(),
+            'descripcion': forms.Textarea(attrs={'rows': 2}),
+            'orden': forms.NumberInput(attrs={'min': '0'}),
+        }
+
+    def clean_nombre(self):
+        nombre = self.cleaned_data.get('nombre', '').strip()
+        if not nombre:
+            raise ValidationError('El nombre no puede estar vacío.')
+        
+        # Validar duplicados sin importar mayúsculas, excluyendo el actual al editar
+        qs = Categoria.objects.filter(nombre__iexact=nombre)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise ValidationError('Ya existe una categoría con este nombre.')
+        return nombre
+
+

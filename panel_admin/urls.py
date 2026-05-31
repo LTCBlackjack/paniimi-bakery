@@ -43,4 +43,10 @@ urlpatterns = [
 
     # Población de Catálogo (solo admin principal)
     path('inventario/poblar/', views.poblar_catalogo_view, name='poblar_catalogo'),
+
+    # Gestión de Categorías
+    path('categorias/', views.categorias, name='categorias'),
+    path('categorias/nueva/', views.crear_categoria, name='crear_categoria'),
+    path('categorias/<int:categoria_id>/editar/', views.editar_categoria, name='editar_categoria'),
+    path('categorias/<int:categoria_id>/eliminar/', views.eliminar_categoria, name='eliminar_categoria'),
 ]

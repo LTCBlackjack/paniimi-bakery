@@ -12,7 +12,7 @@ from django.db.models import Sum
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
 
-from catalogo.models import Orden, OrdenItem, Producto
+from catalogo.models import Orden, OrdenItem, Producto, Categoria
 
 User = get_user_model()
 
@@ -131,7 +131,7 @@ def detalle_pedido(request, orden_id):
 # INVENTARIO — CRUD completo
 # ════════════════════════════════════════════════════════════════════════
 
-from .forms import ProductoForm
+from .forms import ProductoForm, CategoriaForm
 
 
 @staff_member_required(login_url='/auth/login/')
@@ -711,3 +711,72 @@ def poblar_catalogo_view(request):
             messages.error(request, f'Error al poblar el catálogo: {exc}')
         return redirect('panel_admin:inventario')
     return redirect('panel_admin:inventario')
+
+
+@staff_member_required(login_url='/auth/login/')
+def categorias(request):
+    """Lista de categorías registradas en el catálogo."""
+    categorias_list = Categoria.objects.all().order_by('orden', 'nombre')
+    ctx = {
+        'categorias': categorias_list,
+        'seccion_activa': 'categorias',
+    }
+    return render(request, 'panel_admin/categorias.html', ctx)
+
+
+@staff_member_required(login_url='/auth/login/')
+def crear_categoria(request):
+    """Formulario para crear una nueva categoría."""
+    form = CategoriaForm(request.POST or None)
+    if request.method == 'POST' and form.is_valid():
+        categoria = form.save()
+        messages.success(request, f'Categoría "{categoria.nombre}" creada correctamente.')
+        return redirect('panel_admin:categorias')
+
+    ctx = {
+        'form': form,
+        'titulo': 'Nueva Categoría',
+        'seccion_activa': 'categorias',
+    }
+    return render(request, 'panel_admin/categoria_form.html', ctx)
+
+
+@staff_member_required(login_url='/auth/login/')
+def editar_categoria(request, categoria_id):
+    """Editar una categoría existente."""
+    categoria = get_object_or_404(Categoria, pk=categoria_id)
+    form = CategoriaForm(request.POST or None, instance=categoria)
+
+    if request.method == 'POST' and form.is_valid():
+        form.save()
+        messages.success(request, f'Categoría "{categoria.nombre}" actualizada.')
+        return redirect('panel_admin:categorias')
+
+    ctx = {
+        'form': form,
+        'categoria': categoria,
+        'titulo': f'Editar Categoría: {categoria.nombre}',
+        'seccion_activa': 'categorias',
+    }
+    return render(request, 'panel_admin/categoria_form.html', ctx)
+
+
+@staff_member_required(login_url='/auth/login/')
+def eliminar_categoria(request, categoria_id):
+    """Eliminar una categoría y sus productos asociados."""
+    categoria = get_object_or_404(Categoria, pk=categoria_id)
+
+    if request.method == 'POST':
+        nombre = categoria.nombre
+        # Por on_delete=models.CASCADE, al eliminar la categoría se eliminan sus productos.
+        categoria.delete()
+        messages.success(request, f'Categoría "{nombre}" eliminada correctamente junto con sus productos asociados.')
+        return redirect('panel_admin:categorias')
+
+    ctx = {
+        'categoria': categoria,
+        'seccion_activa': 'categorias',
+        'productos_afectados': categoria.productos.count(),
+    }
+    return render(request, 'panel_admin/categoria_confirmar_eliminar.html', ctx)
+
