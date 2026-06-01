@@ -87,7 +87,7 @@
             {% for producto in productos %}
 
             <!-- ── ÍTEM MASONRY — sin card, producto flotante ── -->
-            <article class="masonry-item group">
+            <article class="masonry-item group {% if not producto.disponible %}opacity-80{% endif %}">
 
                 <!-- Imagen — sin contenedor cuadrado, altura natural -->
                 <div class="relative overflow-hidden mb-4">
@@ -96,17 +96,25 @@
                             src="{{ producto.imagen.url }}"
                             alt="{{ producto.nombre }}"
                             class="w-full h-auto object-cover block
-                                   transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                                   transition-transform duration-700 ease-out 
+                                   {% if producto.disponible %}group-hover:scale-[1.03]{% else %}filter grayscale contrast-[0.8] opacity-60{% endif %}"
                         >
                     {% else %}
-                        <div class="w-full bg-neutral/60 flex items-center justify-center"
+                        <div class="w-full bg-neutral/60 flex items-center justify-center {% if not producto.disponible %}filter grayscale opacity-60{% endif %}"
                              style="aspect-ratio: 3/4;">
                             <span class="font-serif italic text-secondary/30 text-sm">Sin imagen</span>
                         </div>
                     {% endif %}
 
+                    <!-- Badge Agotado / No Disponible -->
+                    {% if not producto.disponible %}
+                    <div class="absolute inset-0 bg-black/5 flex items-center justify-center">
+                        <span class="bg-white/95 text-primary text-[10px] font-sans font-bold tracking-[0.25em] uppercase px-4 py-2 border border-primary/10 shadow-sm animate-fade-in-up">
+                            Agotado
+                        </span>
+                    </div>
+                    {% elif producto.destacado %}
                     <!-- Badge Destacado -->
-                    {% if producto.destacado %}
                     <span class="absolute top-3 left-3 bg-primary text-white
                                  font-sans text-[9px] font-semibold tracking-widest uppercase
                                  px-3 py-[5px]">
@@ -116,18 +124,18 @@
                 </div>
 
                 <!-- Info del producto: nombre + precio en misma línea -->
-                <div class="flex items-baseline justify-between gap-4 mb-1">
-                    <h2 class="font-serif italic font-normal text-primary leading-tight text-xl">
+                <div class="flex items-baseline justify-between gap-4 mb-1 {% if not producto.disponible %}text-primary/45{% endif %}">
+                    <h2 class="font-serif italic font-normal leading-tight text-xl {% if not producto.disponible %}text-secondary/50{% else %}text-primary{% endif %}">
                         {{ producto.nombre }}
                     </h2>
-                    <span class="font-sans text-sm font-medium text-primary whitespace-nowrap flex-shrink-0">
+                    <span class="font-sans text-sm font-medium whitespace-nowrap flex-shrink-0 {% if not producto.disponible %}text-secondary/45{% else %}text-primary{% endif %}">
                         ${{ producto.precio }}
                     </span>
                 </div>
 
                 <!-- Descripción breve -->
                 {% if producto.descripcion %}
-                <p class="font-sans text-xs text-secondary/70 leading-relaxed line-clamp-2 mb-3">
+                <p class="font-sans text-xs leading-relaxed line-clamp-2 mb-3 {% if not producto.disponible %}text-secondary/40{% else %}text-secondary/70{% endif %}">
                     {{ producto.descripcion }}
                 </p>
                 {% else %}
@@ -135,6 +143,7 @@
                 {% endif %}
 
                 <!-- Añadir al carrito -->
+                {% if producto.disponible %}
                 <form method="POST" action="{% url 'agregar_al_carrito' producto.id %}">
                     {% csrf_token %}
                     <button type="submit"
@@ -146,6 +155,14 @@
                         Añadir al carrito
                     </button>
                 </form>
+                {% else %}
+                <button type="button" disabled
+                        class="w-full font-sans text-[10px] font-semibold tracking-[.25em]
+                               uppercase border border-zinc-200 text-zinc-400 bg-zinc-50/50
+                               py-2.5 cursor-not-allowed select-none transition-all duration-300">
+                    Agotado
+                </button>
+                {% endif %}
 
             </article>
 

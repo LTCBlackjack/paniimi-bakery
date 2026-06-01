@@ -21,7 +21,7 @@ def catalogo(request):
         .prefetch_related(
             Prefetch(
                 'productos',
-                queryset=Producto.objects.filter(disponible=True).order_by('-destacado', '-creado'),
+                queryset=Producto.objects.all().order_by('-disponible', '-destacado', '-creado'),
             )
         )
         .order_by('orden', 'nombre')
@@ -33,10 +33,9 @@ def catalogo(request):
         categoria_activa = get_object_or_404(Categoria, slug=slug_filtro, activa=True)
         productos = Producto.objects.filter(
             categoria=categoria_activa,
-            disponible=True,
-        ).order_by('-destacado', '-creado')
+        ).order_by('-disponible', '-destacado', '-creado')
     else:
-        productos = Producto.objects.filter(disponible=True).order_by('-destacado', '-creado')
+        productos = Producto.objects.all().order_by('-disponible', '-destacado', '-creado')
 
     context = {
         'categorias': categorias,
