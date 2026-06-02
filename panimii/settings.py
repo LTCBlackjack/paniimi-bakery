@@ -148,6 +148,13 @@ AUTHENTICATION_BACKENDS = [
 STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY', '')
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY', '')
 
+# ── Configuración SPEI y WhatsApp (Flujo de Pago Local) ──────────────────────
+BANK_NAME = os.getenv('BANK_NAME', 'Banco de Prueba')
+BANK_CLABE = os.getenv('BANK_CLABE', '000000000000000000')
+BANK_BENEFICIARY = os.getenv('BANK_BENEFICIARY', 'Paniimi Bakery')
+WHATSAPP_PHONE = os.getenv('WHATSAPP_PHONE', '529991234567')
+
+
 
 # ════════════════════════════════════════════════════════════════════════
 # CORREO ELECTRÓNICO — SMTP

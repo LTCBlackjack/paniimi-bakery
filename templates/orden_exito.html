@@ -3,6 +3,29 @@
 
 {% block title %}Pedido {{ orden.codigo_pedido }} — Panimii Bakery{% endblock %}
 
+{% block extra_js %}
+<script>
+function copiarClabe() {
+    const clabeText = document.getElementById('clabe-val').innerText;
+    navigator.clipboard.writeText(clabeText).then(() => {
+        // Mostrar feedback visual temporal cambiando el icono de copiar
+        const btn = document.querySelector('button[onclick="copiarClabe()"]');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = `
+            <svg class="w-3.5 h-3.5 text-emerald-600 animate-[pulse_0.5s_infinite]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+        `;
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+        }, 2000);
+    }).catch(err => {
+        console.error('Error al copiar la CLABE: ', err);
+    });
+}
+</script>
+{% endblock %}
+
 {% block extra_head %}
 <style>
     /* Estilos personalizados para la línea de tiempo editorial */
@@ -58,6 +81,44 @@
     .timeline-step.active .timeline-dot {
         animation: pulse-outline 1.5s infinite;
     }
+
+    /* Estilos para impresión limpia del comprobante */
+    @media print {
+        header, footer, .no-print, button, a.no-print, iframe {
+            display: none !important;
+        }
+        body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-size: 12px !important;
+        }
+        .bg-neutral {
+            background-color: #ffffff !important;
+            padding: 0 !important;
+            min-height: auto !important;
+        }
+        .max-w-4xl {
+            max-width: 100% !important;
+            border: none !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            margin: 0 !important;
+        }
+        p, span, h1, h2, h3, h4, td, th {
+            color: #000000 !important;
+        }
+        /* Ajustar espaciado al imprimir */
+        .py-12 {
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+        }
+        .pb-10 {
+            padding-bottom: 1.5rem !important;
+        }
+        .mb-10 {
+            margin-bottom: 1.5rem !important;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -84,7 +145,7 @@
         </div>
 
         <!-- ── LÍNEA DE TIEMPO DE LOGÍSTICA (DINÁMICA) ────────────── -->
-        <div class="mb-14">
+        <div class="mb-14 no-print">
             <h2 class="font-sans text-[10px] font-semibold tracking-[.3em] uppercase text-secondary/40 text-center mb-10">
                 Estado de tu Pedido en Tiempo Real
             </h2>
@@ -199,15 +260,96 @@
                     <h4 class="font-sans text-[10px] font-semibold tracking-[.3em] uppercase text-secondary/40 mb-3">
                         Detalles del Pago
                     </h4>
+                    {% if orden.metodo_pago == 'spei' %}
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-5 bg-white border border-neutral/80 flex items-center justify-center rounded-sm">
+                                <span class="font-sans text-[9px] font-bold text-primary uppercase">SPEI</span>
+                            </div>
+                            <div>
+                                <p class="font-sans text-xs text-primary font-semibold">Transferencia Interbancaria (SPEI)</p>
+                                <p class="font-sans text-[10px] text-secondary/40 mt-0.5">Pendiente de confirmación</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Datos de Transferencia -->
+                        <div class="bg-white border border-neutral/80 p-4 rounded-editorial-sm text-xs space-y-2.5 font-sans">
+                            <div class="flex justify-between items-center">
+                                <span class="text-secondary/50">Banco:</span>
+                                <span class="font-semibold text-primary">{{ bank_name }}</span>
+                            </div>
+                            <div class="flex justify-between items-center gap-2">
+                                <span class="text-secondary/50">CLABE:</span>
+                                <div class="flex items-center gap-1.5">
+                                    <span id="clabe-val" class="font-mono font-semibold text-primary">{{ bank_clabe }}</span>
+                                    <button onclick="copiarClabe()" class="text-primary hover:text-secondary/80 focus:outline-none p-1 no-print" title="Copiar CLABE">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-secondary/50">Beneficiario:</span>
+                                <span class="font-semibold text-primary text-right">{{ bank_beneficiary }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-secondary/50">Monto:</span>
+                                <span class="font-semibold text-primary">${{ orden.total }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-secondary/50">Concepto / Referencia:</span>
+                                <span class="font-serif font-bold text-primary">{{ orden.codigo_pedido }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Botón WhatsApp -->
+                        <div class="no-print pt-2">
+                            <a href="{{ whatsapp_url }}" target="_blank"
+                               class="flex items-center justify-center gap-2 bg-[#25D366] text-white font-sans text-xs font-semibold
+                                      tracking-[.1em] uppercase px-5 py-3.5 rounded-editorial-sm transition-all duration-300
+                                      hover:bg-[#20ba5a] hover:-translate-y-0.5 hover:shadow-md text-center">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                                    <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.514 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.37 9.864-9.799.002-2.63-1.023-5.101-2.885-6.97C16.528 2.017 14.077.99 11.452.99 6.015.99 1.593 5.36 1.59 10.789c-.001 1.704.453 3.37 1.316 4.878l-.995 3.635 3.737-.978zm12.302-5.467c-.328-.163-1.94-.949-2.24-1.059-.3-.109-.519-.163-.737.163-.218.327-.844 1.059-1.036 1.278-.192.218-.384.245-.712.081-.328-.162-1.383-.505-2.635-1.613-.973-.865-1.63-1.933-1.821-2.26-.192-.327-.02-.504.143-.666.147-.146.328-.382.492-.573.164-.191.219-.328.328-.546.11-.218.055-.41-.027-.573-.082-.164-.737-1.748-1.01-2.403-.266-.64-.539-.553-.737-.563-.191-.01-.41-.011-.628-.011-.219 0-.573.082-.873.41-.3.327-1.147 1.118-1.147 2.729 0 1.611 1.173 3.166 1.337 3.385.164.218 2.307 3.495 5.59 4.908.78.336 1.39.537 1.867.687.784.248 1.497.213 2.062.13.629-.094 1.94-.787 2.212-1.549.273-.761.273-1.413.191-1.549-.081-.136-.299-.218-.627-.382z"/>
+                                </svg>
+                                Enviar Comprobante por WhatsApp 🐻💬
+                            </a>
+                            <p class="text-center font-sans text-[10px] text-secondary/40 mt-1.5">
+                                Presiona para abrir chat directo con Paniimi.
+                            </p>
+                        </div>
+                    </div>
+                    {% elif orden.metodo_pago == 'cash' %}
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-5 bg-white border border-neutral/80 flex items-center justify-center rounded-sm">
+                                <span class="font-sans text-[9px] font-bold text-primary uppercase">CASH</span>
+                            </div>
+                            <div>
+                                <p class="font-sans text-xs text-primary font-semibold">Pago contra entrega</p>
+                                <p class="font-sans text-[10px] text-secondary/40 mt-0.5">Efectivo o Terminal</p>
+                            </div>
+                        </div>
+                        <div class="bg-white border border-neutral/80 p-4 rounded-editorial-sm text-xs font-sans leading-relaxed text-secondary/70">
+                            <p class="mb-1 text-primary font-semibold">Instrucciones:</p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Paga en <strong>efectivo</strong> al recibir tu pedido.</li>
+                                <li>O con <strong>tarjeta de débito/crédito</strong> (llevamos terminal Clip).</li>
+                                <li>Ten listo el monto exacto si pagas en efectivo.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% else %}
                     <div class="flex items-center gap-3">
                         <div class="w-8 h-5 bg-white border border-neutral/80 flex items-center justify-center rounded-sm">
-                            <span class="font-sans text-[9px] font-bold text-primary uppercase">Stripe</span>
+                            <span class="font-sans text-[9px] font-bold text-primary uppercase">CARD</span>
                         </div>
                         <div>
-                            <p class="font-sans text-xs text-primary font-semibold">Pago procesado de forma segura</p>
+                            <p class="font-sans text-xs text-primary font-semibold">Pago procesado con tarjeta</p>
                             <p class="font-sans text-[10px] text-secondary/40 mt-0.5">ID: {{ orden.stripe_payment_intent_id|slice:":24" }}...</p>
                         </div>
                     </div>
+                    {% endif %}
                 </div>
                 
                 <div class="pt-4 border-t border-neutral-300/40 text-center md:text-left">
@@ -219,10 +361,16 @@
         </div>
 
         <!-- ── BOTONES DE ACCIÓN ─────────────────────────────────── -->
-        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12 border-t border-neutral pt-10">
+        <div class="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12 border-t border-neutral pt-10 no-print">
             <a href="{% url 'catalogo:lista' %}" class="btn-editorial w-full sm:w-auto text-center">
                 Seguir Comprando
             </a>
+            <button onclick="window.print()" id="btn-print"
+               class="inline-block text-center w-full sm:w-auto border border-primary/20 text-primary font-sans text-xs font-semibold
+                      tracking-[.2em] uppercase px-8 py-3 rounded-editorial-sm transition-all duration-300
+                      hover:bg-neutral hover:border-primary">
+                Imprimir Recibo
+            </button>
             <a href="{% url 'dashboard' %}" 
                class="inline-block text-center w-full sm:w-auto border border-primary/20 text-primary font-sans text-xs font-semibold
                       tracking-[.2em] uppercase px-8 py-3 rounded-editorial-sm transition-all duration-300

@@ -58,6 +58,17 @@
                         {% else %}
                             <span class="text-accent-muted italic">{{ orden.email_cliente|default:"Anónimo" }}</span>
                         {% endif %}
+                        <div class="text-[10px] text-accent-muted mt-0.5 font-sans font-medium">
+                            {% if orden.metodo_pago == 'spei' %}
+                                <span class="text-blue-600">SPEI</span>
+                            {% elif orden.metodo_pago == 'cash' %}
+                                <span class="text-emerald-600">Efectivo/Terminal</span>
+                            {% elif orden.metodo_pago == 'card' %}
+                                <span class="text-purple-600">Tarjeta (Stripe)</span>
+                            {% else %}
+                                <span>{{ orden.metodo_pago }}</span>
+                            {% endif %}
+                        </div>
                     </td>
                     <td class="font-semibold">${{ orden.total|floatformat:2 }}</td>
                     <td>

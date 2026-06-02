@@ -350,15 +350,13 @@ def enviar_correo_confirmacion_pedido(orden, request):
 @require_POST
 def crear_orden_checkout(request):
     """
-    Recibe el PaymentMethod de Stripe y los datos de dirección,
-    crea un PaymentIntent, registra la Orden en PostgreSQL y
-    confirma el pago.
+    Recibe el método de pago local y los datos de dirección,
+    registra la Orden en PostgreSQL como PENDIENTE y vacía el carrito.
 
     Responde con JSON:
-      { ok: true, orden_id, client_secret }  → éxito
-      { ok: false, error }                   → fallo
+      { ok: true, orden_id }  → éxito
+      { ok: false, error }     → fallo
     """
-    import stripe
     from decimal import Decimal
 
     try:
@@ -366,8 +364,12 @@ def crear_orden_checkout(request):
     except json.JSONDecodeError:
         return JsonResponse({'ok': False, 'error': 'Datos inválidos.'}, status=400)
 
-    payment_method_id = data.get('payment_method_id', '').strip()
-    direccion_data    = data.get('direccion', {})
+    metodo_pago    = data.get('metodo_pago', 'spei').strip()
+    direccion_data = data.get('direccion', {})
+
+    # Validar que el método de pago sea permitido
+    if metodo_pago not in ['spei', 'cash']:
+        return JsonResponse({'ok': False, 'error': 'Método de pago no soportado.'}, status=400)
 
     # ── Validar dirección ────────────────────────────────────────
     form = DireccionEntregaForm(direccion_data)
@@ -399,37 +401,14 @@ def crear_orden_checkout(request):
     if not items_carrito or total <= 0:
         return JsonResponse({'ok': False, 'error': 'Carrito inválido.'}, status=400)
 
-    # ── Stripe: crear y confirmar PaymentIntent ───────────────────
-    stripe.api_key = settings.STRIPE_SECRET_KEY
-    monto_centavos = int(total * 100)  # Stripe trabaja en centavos
-
-    try:
-        intent = stripe.PaymentIntent.create(
-            amount              = monto_centavos,
-            currency            = 'mxn',
-            payment_method      = payment_method_id,
-            confirmation_method = 'manual',
-            confirm             = True,
-            return_url          = request.build_absolute_uri('/carrito/'),
-            metadata            = {
-                'cliente_id':   request.user.id,
-                'cliente_email': request.user.email,
-            },
-        )
-    except stripe.error.CardError as e:
-        return JsonResponse({'ok': False, 'error': e.user_message}, status=402)
-    except stripe.error.StripeError as e:
-        logger.error('Stripe error en checkout: %s', e)
-        return JsonResponse({'ok': False, 'error': 'Error al procesar el pago. Intenta de nuevo.'}, status=502)
-
     # ── Crear Orden en PostgreSQL ─────────────────────────────────
     cd = form.cleaned_data
     orden = Orden.objects.create(
         cliente                  = request.user,
         email_cliente            = request.user.email,
         total                    = total,
-        stripe_payment_intent_id = intent.id,
-        metodo_pago              = 'card',
+        stripe_payment_intent_id = "",
+        metodo_pago              = metodo_pago,
         # Dirección
         telefono      = cd['telefono'],
         calle         = cd['calle'],
@@ -438,8 +417,8 @@ def crear_orden_checkout(request):
         estado_mx     = cd.get('estado_mx', 'Yucatán'),
         codigo_postal = cd['codigo_postal'],
         referencias   = cd.get('referencias', ''),
-        # Estado según resultado de Stripe
-        estado = Orden.Estado.PAGADA if intent.status == 'succeeded' else Orden.Estado.PENDIENTE,
+        # Todas las órdenes sin Stripe inician en PENDIENTE
+        estado = Orden.Estado.PENDIENTE,
     )
 
     # ── Autoguardar dirección de envío si se solicita ──────────────
@@ -488,20 +467,10 @@ def crear_orden_checkout(request):
     request.session['carrito'] = {}
     request.session.modified   = True
 
-    # ── Respuesta según estado del intent ─────────────────────────
-    if intent.status == 'succeeded':
-        enviar_correo_confirmacion_pedido(orden, request)
-        return JsonResponse({'ok': True, 'orden_id': orden.pk})
-    elif intent.status == 'requires_action':
-        # Requiere autenticación 3D Secure
-        return JsonResponse({
-            'ok':           True,
-            'requires_action': True,
-            'client_secret':   intent.client_secret,
-            'orden_id':        orden.pk,
-        })
-    else:
-        return JsonResponse({'ok': False, 'error': f'Estado inesperado: {intent.status}'}, status=502)
+    # Enviar correo de confirmación de pedido recibido
+    enviar_correo_confirmacion_pedido(orden, request)
+    
+    return JsonResponse({'ok': True, 'orden_id': orden.pk})
 
 
 
@@ -572,6 +541,8 @@ def orden_exito(request, pk):
     """
     from django.shortcuts import get_object_or_404
     from django.http import Http404
+    from django.conf import settings
+    import urllib.parse
 
     orden = get_object_or_404(Orden, pk=pk)
 
@@ -614,9 +585,25 @@ def orden_exito(request, pk):
         }
     ]
 
+    # Generar URL de WhatsApp pre-llenada para SPEI
+    whatsapp_url = None
+    if orden.metodo_pago == 'spei':
+        # Texto del mensaje automático
+        mensaje = (
+            f"¡Hola Paniimi Bakery! 🐻 Adjunto el comprobante de mi transferencia "
+            f"para el pedido #{orden.codigo_pedido} por un total de ${orden.total}."
+        )
+        # Limpiar número de caracteres no numéricos
+        phone = "".join(filter(str.isdigit, str(settings.WHATSAPP_PHONE)))
+        whatsapp_url = f"https://wa.me/{phone}?text={urllib.parse.quote(mensaje)}"
+
     ctx = {
         'orden': orden,
         'pasos': pasos,
+        'bank_name': settings.BANK_NAME,
+        'bank_clabe': settings.BANK_CLABE,
+        'bank_beneficiary': settings.BANK_BENEFICIARY,
+        'whatsapp_url': whatsapp_url,
     }
     return render(request, 'orden_exito.html', ctx)
 
