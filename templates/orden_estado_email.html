@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirmación de Pedido — Paniimi Bakery</title>
+    <title>Actualización de Pedido — Paniimi Bakery</title>
 </head>
 <body style="margin: 0; padding: 0; background-color: #F7F4F0; font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif; color: #4A4A4A; -webkit-font-smoothing: antialiased;">
     <table border="0" cellpadding="0" cellspacing="0" width="100%" style="background-color: #F7F4F0; padding: 40px 20px;">
@@ -25,7 +25,7 @@
                     <tr>
                         <td align="left" style="padding-bottom: 10px;">
                             <h1 style="margin: 0; font-family: 'Georgia', 'Times New Roman', serif; font-style: italic; font-size: 28px; font-weight: normal; color: #000000; line-height: 1.2;">
-                                ¡Gracias por tu compra!
+                                ¡Tu pedido ha sido actualizado!
                             </h1>
                         </td>
                     </tr>
@@ -40,13 +40,12 @@
                         <td align="left" style="padding-bottom: 25px; font-size: 14px; line-height: 1.6;">
                             Hola, <strong>{{ orden.cliente.username|default:"Cliente" }}</strong>.
                             <br><br>
-                            {% if orden.metodo_pago == 'spei' %}
-                            Hemos registrado tu pedido con el método de pago <strong>Transferencia SPEI</strong>. Por favor, recuerda enviar tu comprobante por WhatsApp si aún no lo has hecho. Nuestros reposteros iniciarán tu pedido una vez de confirmar el pago.
-                            {% elif orden.metodo_pago == 'cash' %}
-                            Hemos recibido tu pedido con el método de pago <strong>Pago contra entrega</strong>. Podrás pagar al recibir en tu domicilio en efectivo o con tarjeta. ¡Nuestros reposteros ya están manos a la masa!
-                            {% else %}
-                            Tu pago con tarjeta de crédito/débito a través de Stripe ha sido confirmado con éxito. Nuestros reposteros ya están listos para preparar tu pedido y entregártelo calientito.
-                            {% endif %}
+                            Te escribimos para avisarte que el estado de tu pedido ha cambiado a:
+                            <span style="display: inline-block; background-color: #000000; color: #FFFFFF; padding: 4px 10px; font-size: 11px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.1em; font-family: sans-serif; margin-left: 5px;">
+                                {{ estado_texto }}
+                            </span>
+                            <br><br>
+                            {{ mensaje_personalizado }}
                         </td>
                     </tr>
                     
@@ -76,13 +75,9 @@
                                     </tr>
                                     {% endfor %}
                                     
-                                    <!-- Desglose de Envío y Total -->
-                                    <tr>
-                                        <td colspan="2" align="right" style="padding: 15px 0 5px 0; color: #7F7F7F;">Envío (Mérida Local):</td>
-                                        <td align="right" style="padding: 15px 0 5px 0; font-weight: bold; color: #2E7D32;">Gratis</td>
-                                    </tr>
+                                    <!-- Desglose de Total -->
                                     <tr style="border-top: 1px solid #000000;">
-                                        <td colspan="2" align="right" style="padding: 15px 0; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #000000;">Total Pagado:</td>
+                                        <td colspan="2" align="right" style="padding: 15px 0; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #000000;">Total de la compra:</td>
                                         <td align="right" style="padding: 15px 0; font-weight: bold; font-size: 16px; color: #000000;">
                                             ${{ orden.total }} MXN
                                         </td>
@@ -120,7 +115,7 @@
                                         <a href="{{ protocol }}://{{ domain }}{% url 'orden_exito' pk=orden.pk %}" 
                                            target="_blank" 
                                            style="display: block; padding: 16px 28px; font-size: 12px; font-weight: bold; font-family: sans-serif; color: #FFFFFF; text-decoration: none; text-transform: uppercase; letter-spacing: 0.25em; border: 1px solid #000000;">
-                                            Seguir mi pedido en tiempo real
+                                            Ver detalle y seguimiento en tiempo real
                                         </a>
                                     </td>
                                 </tr>

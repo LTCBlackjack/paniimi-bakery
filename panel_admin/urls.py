@@ -12,6 +12,7 @@ urlpatterns = [
     # Gestión de Pedidos
     path('pedidos/', views.pedidos, name='pedidos'),
     path('pedidos/<int:orden_id>/', views.detalle_pedido, name='detalle_pedido'),
+    path('pedidos/<int:orden_id>/eliminar/', views.eliminar_pedido, name='eliminar_pedido'),
 
     # Inventario — CRUD
     path('inventario/',                          views.inventario,          name='inventario'),

@@ -106,6 +106,61 @@ def pedidos(request):
     return render(request, 'panel_admin/pedidos.html', ctx)
 
 
+def enviar_correo_cambio_estado(orden, nuevo_estado, request):
+    """
+    Envía un correo HTML al cliente notificando el cambio de estado de su pedido.
+    """
+    from django.template.loader import render_to_string
+    from django.core.mail import send_mail
+    from django.conf import settings
+    import logging
+    logger = logging.getLogger(__name__)
+
+    protocol = 'https' if request.is_secure() else 'http'
+    domain = request.get_host()
+
+    subject_map = {
+        'pagada': f"¡Pago recibido! 🐻 Tu pedido #{orden.pk} está confirmado",
+        'en_proceso': f"Tu pedido #{orden.pk} está en proceso de horneado 🥣",
+        'enviada': f"¡Tu pedido va en camino! 🚴‍♂️ Orden #{orden.pk}",
+        'entregada': f"¡Pedido entregado! 🐻 Gracias por tu compra - #{orden.pk}",
+        'cancelada': f"Tu pedido #{orden.pk} ha sido cancelado",
+    }
+    
+    asunto = subject_map.get(nuevo_estado, f"Actualización de tu pedido #{orden.pk} — Paniimi Bakery")
+
+    # Mensajes personalizados según el estado
+    mensajes = {
+        'pagada': "Hemos registrado tu pago con éxito. Tus reposterías artesanales están listas o en proceso de horneado.",
+        'en_proceso': "Nuestros reposteros ya están manos a la masa preparando tus roles y galletas favoritas.",
+        'enviada': "¡Tu pedido ha salido de la cocina! Nuestro repartidor ya va en camino hacia tu dirección de entrega.",
+        'entregada': "¡Tu pedido ha sido entregado! Esperamos de corazón que disfrutes cada bocado. ¡Gracias por elegir a Paniimi Bakery!",
+        'cancelada': "Lamentamos informarte que tu pedido ha sido cancelado. Si tienes dudas, contáctanos respondiendo a este correo.",
+    }
+    
+    mensaje_personalizado = mensajes.get(nuevo_estado, f"El estado de tu pedido ha cambiado a: {orden.get_estado_display()}")
+
+    cuerpo = render_to_string('orden_estado_email.html', {
+        'orden': orden,
+        'estado_texto': orden.get_estado_display(),
+        'mensaje_personalizado': mensaje_personalizado,
+        'protocol': protocol,
+        'domain': domain,
+    })
+
+    try:
+        send_mail(
+            subject=asunto,
+            message="",
+            html_message=cuerpo,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[orden.email_cliente],
+            fail_silently=False,
+        )
+    except Exception as exc:
+        logger.error('Error al enviar correo de cambio de estado %s para pedido #%s: %s', nuevo_estado, orden.pk, exc)
+
+
 @staff_member_required(login_url='/auth/login/')
 def detalle_pedido(request, orden_id):
     """Detalle completo de una orden y permite cambiar el estado de la misma."""
@@ -115,9 +170,16 @@ def detalle_pedido(request, orden_id):
     if request.method == 'POST':
         nuevo_estado = request.POST.get('estado')
         if nuevo_estado in Orden.Estado.values:
-            orden.estado = nuevo_estado
-            orden.save(update_fields=['estado'])
-            messages.success(request, f'Estado del pedido #{orden.pk} actualizado a "{orden.get_estado_display()}".')
+            if orden.estado != nuevo_estado:
+                orden.estado = nuevo_estado
+                orden.save(update_fields=['estado'])
+                
+                # Enviar correo de notificación de cambio de estado al cliente
+                enviar_correo_cambio_estado(orden, nuevo_estado, request)
+                
+                messages.success(request, f'Estado del pedido #{orden.pk} actualizado a "{orden.get_estado_display()}" y correo enviado.')
+            else:
+                messages.info(request, 'El pedido ya tiene ese estado.')
 
     ctx = {
         'orden':          orden,
@@ -779,4 +841,22 @@ def eliminar_categoria(request, categoria_id):
         'productos_afectados': categoria.productos.count(),
     }
     return render(request, 'panel_admin/categoria_confirmar_eliminar.html', ctx)
+
+
+@staff_member_required(login_url='/auth/login/')
+def eliminar_pedido(request, orden_id):
+    """Eliminar un pedido permanentemente."""
+    orden = get_object_or_404(Orden, pk=orden_id)
+
+    if request.method == 'POST':
+        pk = orden.pk
+        orden.delete()
+        messages.success(request, f'Pedido #{pk} eliminado correctamente.')
+        return redirect('panel_admin:pedidos')
+
+    ctx = {
+        'orden': orden,
+        'seccion_activa': 'pedidos',
+    }
+    return render(request, 'panel_admin/orden_confirmar_eliminar.html', ctx)
 

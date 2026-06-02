@@ -1,0 +1,75 @@
+{% extends "panel_admin/admin_base.html" %}
+
+{% block title %}Eliminar Pedido{% endblock %}
+{% block page_title %}Eliminar Pedido #{{ orden.pk }}{% endblock %}
+
+{% block content %}
+
+<div class="max-w-lg mx-auto animate-fade-in-up">
+    <div class="bg-admin-card border border-red-200">
+
+        <!-- Cabecera de peligro -->
+        <div class="px-6 py-5 border-b border-red-100 bg-red-50 flex items-center gap-3">
+            <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <div>
+                <h2 class="font-serif text-lg font-bold text-red-800">¿Eliminar este pedido?</h2>
+                <p class="text-xs text-red-600 mt-0.5">Esta acción no se puede deshacer.</p>
+            </div>
+        </div>
+
+        <!-- Datos del pedido a eliminar -->
+        <div class="px-6 py-6">
+            <div class="p-4 bg-neutral border border-zinc-100 mb-6 space-y-2">
+                <p class="text-sm font-semibold text-primary">
+                    Código de Pedido: {{ orden.codigo_pedido }}
+                </p>
+                <p class="text-xs text-secondary">
+                    <strong>Cliente:</strong> {{ orden.cliente.get_full_name|default:orden.cliente.username|default:orden.email_cliente }}
+                </p>
+                <p class="text-xs text-secondary">
+                    <strong>Total:</strong> ${{ orden.total }}
+                </p>
+                <p class="text-xs text-secondary">
+                    <strong>Fecha:</strong> {{ orden.creado|date:"d M Y, H:i" }}
+                </p>
+                <p class="text-xs text-secondary">
+                    <strong>Estado actual:</strong> 
+                    <span class="badge badge-{{ orden.estado }} text-[10px] px-2 py-0.5 font-semibold">
+                        {{ orden.get_estado_display }}
+                    </span>
+                </p>
+            </div>
+
+            <p class="text-sm text-secondary mb-6 leading-relaxed">
+                Se eliminarán permanentemente todos los datos de esta orden y el historial de artículos comprados. 
+                <strong class="text-primary font-semibold">Esta operación es irreversible.</strong>
+            </p>
+
+            <!-- Acciones -->
+            <div class="flex items-center justify-between gap-3">
+                <a href="{% url 'panel_admin:pedidos' %}"
+                   class="btn-admin-outline flex-1 text-center">
+                    Cancelar
+                </a>
+
+                <form method="POST" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit"
+                            id="btn-confirmar-eliminar"
+                            class="w-full inline-block bg-red-600 text-white text-xs font-semibold
+                                   tracking-wider uppercase px-6 py-2.5
+                                   hover:bg-red-700 transition-colors duration-200">
+                        Sí, eliminar pedido
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
