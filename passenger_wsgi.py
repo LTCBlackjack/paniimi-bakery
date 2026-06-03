@@ -12,6 +12,9 @@ sys.path.insert(0, base_dir)
 try:
     public_html = "/home/paniimibakery/public_html"
     
+    # Ejecutar las migraciones de la base de datos automáticamente
+    subprocess.run([sys.executable, "manage.py", "migrate", "--noinput"], cwd=base_dir)
+    
     # Recopilar todos los archivos estaticos
     subprocess.run([sys.executable, "manage.py", "collectstatic", "--noinput"], cwd=base_dir)
     
