@@ -11,13 +11,13 @@
      ═══════════════════════════════════════════════════ -->
 <section id="hero-section" class="section-surface overflow-hidden relative">
     {% if temporada_activa == 'verano' %}
-    <!-- Contenedor para el fondo doble de verano (oso_verano5 a la izquierda, oso_verano4 a la derecha) -->
+    <!-- Contenedor para el fondo doble de verano (oso_verano4 a la izquierda, oso_verano5 a la derecha) -->
     <div id="hero-double-bg" class="absolute inset-0 z-0 hidden flex no-print">
         <div class="w-1/2 h-full relative">
-            <img src="{% static 'img/oso_verano5.jpeg' %}" alt="Verano fondo izquierdo" class="w-full h-full object-cover">
+            <img src="{% static 'img/oso_verano4.jpeg' %}" alt="Verano fondo izquierdo" class="w-full h-full object-cover">
         </div>
         <div class="w-1/2 h-full relative">
-            <img src="{% static 'img/oso_verano4.jpeg' %}" alt="Verano fondo derecho" class="w-full h-full object-cover">
+            <img src="{% static 'img/oso_verano5.jpeg' %}" alt="Verano fondo derecho" class="w-full h-full object-cover">
         </div>
         <!-- Capa de overlay para integrar con la paleta de colores y mejorar legibilidad del texto -->
         <div class="absolute inset-0 pointer-events-none" style="background-color: rgba(252, 246, 229, 0.88);"></div>
