@@ -129,7 +129,11 @@
                         {{ producto.nombre }}
                     </h2>
                     <span class="font-sans text-sm font-medium whitespace-nowrap flex-shrink-0 {% if not producto.disponible %}text-secondary/45{% else %}text-primary{% endif %}">
-                        ${{ producto.precio }}
+                        {% if producto.precio_grande %}
+                            ${{ producto.precio }} - ${{ producto.precio_grande }}
+                        {% else %}
+                            ${{ producto.precio }}
+                        {% endif %}
                     </span>
                 </div>
 
@@ -144,12 +148,33 @@
 
                 <!-- Añadir al carrito -->
                 {% if producto.disponible %}
-                <form method="POST" action="{% url 'agregar_al_carrito' producto.id %}">
+                <form method="POST" action="{% url 'agregar_al_carrito' producto.id %}" class="mt-3">
                     {% csrf_token %}
+                    
+                    {% if producto.precio_grande %}
+                    <!-- Pills de tamaño: visibles siempre en móvil, hover en desktop -->
+                    <div class="mb-3 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300">
+                        <div class="flex gap-2">
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="tamano" value="chico" checked class="sr-only peer">
+                                <div class="text-center font-sans text-[10px] tracking-wide uppercase border border-zinc-200 py-1.5 px-2 transition-colors peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white">
+                                    Chico (${{ producto.precio }})
+                                </div>
+                            </label>
+                            <label class="flex-1 cursor-pointer">
+                                <input type="radio" name="tamano" value="grande" class="sr-only peer">
+                                <div class="text-center font-sans text-[10px] tracking-wide uppercase border border-zinc-200 py-1.5 px-2 transition-colors peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white">
+                                    Grande (${{ producto.precio_grande }})
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    {% endif %}
+
                     <button type="submit"
                             class="w-full font-sans text-[10px] font-semibold tracking-[.25em]
                                    uppercase border border-primary text-primary
-                                   py-2.5 opacity-0 group-hover:opacity-100
+                                   py-2.5 md:opacity-0 md:group-hover:opacity-100
                                    hover:bg-primary hover:text-white
                                    transition-all duration-300">
                         Añadir al carrito

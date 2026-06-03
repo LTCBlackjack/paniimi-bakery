@@ -78,6 +78,19 @@ class Producto(models.Model):
         default=0,
         help_text='Número de unidades disponibles en inventario.',
     )
+    precio_grande = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name='Precio Grande (Opcional)',
+        help_text='Precio para el tamaño grande del producto. Dejar vacío si solo hay un tamaño.',
+    )
+    stock_grande = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Stock Grande (Opcional)',
+        help_text='Número de unidades de tamaño grande disponibles en inventario.',
+    )
     creado = models.DateTimeField(auto_now_add=True)
     actualizado = models.DateTimeField(auto_now=True)
 
@@ -320,6 +333,12 @@ class OrdenItem(models.Model):
     nombre_producto = models.CharField(max_length=200)  # snapshot del nombre
     precio_unitario = models.DecimalField(max_digits=8, decimal_places=2)
     cantidad        = models.PositiveIntegerField(default=1)
+    tamano          = models.CharField(
+        max_length=50,
+        blank=True,
+        default='',
+        verbose_name='Tamaño',
+    )
 
     class Meta:
         verbose_name = 'Ítem de Orden'

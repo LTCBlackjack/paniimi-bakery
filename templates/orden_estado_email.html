@@ -65,6 +65,9 @@
                                     <tr style="border-bottom: 1px solid #E8E3DD;">
                                         <td align="left" style="padding: 14px 0; font-family: 'Georgia', serif; font-size: 14px; color: #000000;">
                                             {{ item.nombre_producto }}
+                                            {% if item.tamano %}
+                                            <span style="font-family: sans-serif; font-size: 11px; color: #7F7F7F; margin-left: 6px;">({{ item.tamano }})</span>
+                                            {% endif %}
                                         </td>
                                         <td align="center" style="padding: 14px 0; color: #4A4A4A;">
                                             {{ item.cantidad }}

@@ -208,7 +208,12 @@ function copiarClabe() {
                     {% for item in orden.items.all %}
                     <div class="flex justify-between items-center py-2 border-b border-neutral/60 last:border-0">
                         <div>
-                            <p class="font-serif text-sm font-bold text-primary">{{ item.nombre_producto }}</p>
+                            <p class="font-serif text-sm font-bold text-primary">
+                                {{ item.nombre_producto }}
+                                {% if item.tamano %}
+                                <span class="font-sans text-xs font-normal text-secondary/60 ml-1">({{ item.tamano }})</span>
+                                {% endif %}
+                            </p>
                             <p class="font-sans text-xs text-secondary/50">{{ item.cantidad }} × ${{ item.precio_unitario }}</p>
                         </div>
                         <p class="font-sans text-sm font-semibold text-primary">

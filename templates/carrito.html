@@ -224,6 +224,11 @@
                                 <p class="font-serif text-base font-bold text-primary leading-tight">
                                     {{ item.nombre }}
                                 </p>
+                                {% if item.tamano %}
+                                <p class="text-xs text-secondary/60 mt-1">
+                                    Tamaño: <span class="font-medium text-primary">{{ item.tamano }}</span>
+                                </p>
+                                {% endif %}
                                 <!-- Eliminar (móvil) -->
                                 <form method="POST" action="{% url 'actualizar_carrito' item.id %}"
                                       class="md:hidden mt-1">

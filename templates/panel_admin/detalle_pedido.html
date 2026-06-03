@@ -49,7 +49,12 @@
                 <tbody>
                     {% for item in orden.items.all %}
                     <tr>
-                        <td class="font-medium text-primary">{{ item.nombre_producto }}</td>
+                        <td class="font-medium text-primary">
+                            {{ item.nombre_producto }}
+                            {% if item.tamano %}
+                            <span class="text-xs font-normal text-accent-muted ml-1.5">({{ item.tamano }})</span>
+                            {% endif %}
+                        </td>
                         <td class="text-center">{{ item.cantidad }}</td>
                         <td class="text-right">${{ item.precio_unitario|floatformat:2 }}</td>
                         <td class="text-right font-semibold">${{ item.subtotal|floatformat:2 }}</td>

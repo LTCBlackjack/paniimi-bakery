@@ -142,14 +142,14 @@
             <!-- ── Precio y Stock ───────────────────────────────────── -->
             <fieldset>
                 <legend class="text-xs font-semibold uppercase tracking-widest text-accent-muted mb-4">
-                    Precio e Inventario
+                    Precio e Inventario (Tamaño Chico / Normal)
                 </legend>
                 <div class="grid grid-cols-2 gap-4">
 
                     <div>
                         <label for="{{ form.precio.id_for_label }}"
                                class="block text-xs font-semibold uppercase tracking-widest text-accent-muted mb-1.5">
-                            Precio (MXN) <span class="text-stat-rose">*</span>
+                            Precio Chico (MXN) <span class="text-stat-rose">*</span>
                         </label>
                         {{ form.precio }}
                         {% if form.precio.errors %}
@@ -160,12 +160,45 @@
                     <div>
                         <label for="{{ form.stock.id_for_label }}"
                                class="block text-xs font-semibold uppercase tracking-widest text-accent-muted mb-1.5">
-                            Stock (unidades)
+                            Stock Chico (unidades)
                         </label>
                         {{ form.stock }}
                         <p class="mt-1 text-xs text-accent-muted">{{ form.stock.help_text }}</p>
                         {% if form.stock.errors %}
                         <p class="mt-1 text-xs text-red-600">{{ form.stock.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend class="text-xs font-semibold uppercase tracking-widest text-accent-muted mb-4">
+                    Precio e Inventario (Tamaño Grande — Opcional)
+                </legend>
+                <div class="grid grid-cols-2 gap-4">
+
+                    <div>
+                        <label for="{{ form.precio_grande.id_for_label }}"
+                               class="block text-xs font-semibold uppercase tracking-widest text-accent-muted mb-1.5">
+                            Precio Grande (MXN)
+                        </label>
+                        {{ form.precio_grande }}
+                        <p class="mt-1 text-xs text-accent-muted">{{ form.precio_grande.help_text }}</p>
+                        {% if form.precio_grande.errors %}
+                        <p class="mt-1 text-xs text-red-600">{{ form.precio_grande.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.stock_grande.id_for_label }}"
+                               class="block text-xs font-semibold uppercase tracking-widest text-accent-muted mb-1.5">
+                            Stock Grande (unidades)
+                        </label>
+                        {{ form.stock_grande }}
+                        <p class="mt-1 text-xs text-accent-muted">{{ form.stock_grande.help_text }}</p>
+                        {% if form.stock_grande.errors %}
+                        <p class="mt-1 text-xs text-red-600">{{ form.stock_grande.errors.0 }}</p>
                         {% endif %}
                     </div>
 
