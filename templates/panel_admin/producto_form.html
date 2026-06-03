@@ -205,6 +205,24 @@
                 </div>
             </fieldset>
 
+            <!-- ── Descuento ────────────────────────────────────────── -->
+            <fieldset>
+                <legend class="text-xs font-semibold uppercase tracking-widest text-accent-muted mb-4">
+                    Oferta Especial (Descuento)
+                </legend>
+                <div class="max-w-xs">
+                    <label for="{{ form.descuento_porcentaje.id_for_label }}"
+                           class="block text-xs font-semibold uppercase tracking-widest text-accent-muted mb-1.5">
+                        Porcentaje de Descuento (%)
+                    </label>
+                    {{ form.descuento_porcentaje }}
+                    <p class="mt-1 text-xs text-accent-muted">{{ form.descuento_porcentaje.help_text }}</p>
+                    {% if form.descuento_porcentaje.errors %}
+                    <p class="mt-1 text-xs text-red-600">{{ form.descuento_porcentaje.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </fieldset>
+
             <!-- ── Imagen ───────────────────────────────────────────── -->
             <fieldset>
                 <legend class="text-xs font-semibold uppercase tracking-widest text-accent-muted mb-4">

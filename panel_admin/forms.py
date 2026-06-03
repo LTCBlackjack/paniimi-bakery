@@ -160,36 +160,40 @@ class ProductoForm(forms.ModelForm):
             'nombre', 'categoria', 'descripcion',
             'precio', 'stock',
             'precio_grande', 'stock_grande',
+            'descuento_porcentaje',
             'imagen', 'disponible', 'destacado',
         ]
         labels = {
-            'nombre':        'Nombre del producto',
-            'categoria':     'Categoría',
-            'descripcion':   'Descripción',
-            'precio':        'Precio Chico (MXN)',
-            'stock':         'Stock Chico (unidades)',
-            'precio_grande': 'Precio Grande (MXN, Opcional)',
-            'stock_grande':  'Stock Grande (unidades, Opcional)',
-            'imagen':        'Imagen del producto',
-            'disponible':    'Disponible en tienda',
-            'destacado':     'Producto destacado',
+            'nombre':               'Nombre del producto',
+            'categoria':            'Categoría',
+            'descripcion':          'Descripción',
+            'precio':               'Precio Chico (MXN)',
+            'stock':                'Stock Chico (unidades)',
+            'precio_grande':        'Precio Grande (MXN, Opcional)',
+            'stock_grande':         'Stock Grande (unidades, Opcional)',
+            'descuento_porcentaje': 'Descuento (%)',
+            'imagen':               'Imagen del producto',
+            'disponible':           'Disponible en tienda',
+            'destacado':            'Producto destacado',
         }
         help_texts = {
-            'imagen':        'La imagen se comprimirá y convertirá a WebP automáticamente.',
-            'destacado':     'Aparece en las OFERTAS ESPECIALES de la página de inicio y en la sección de destacados.',
-            'disponible':    'Desactívalo para ocultarlo del catálogo sin eliminarlo.',
-            'stock':         'Pon 0 si no llevas control de inventario.',
-            'precio_grande': 'Precio para el tamaño grande del producto. Dejar vacío si solo hay un tamaño.',
-            'stock_grande':  'Número de unidades de tamaño grande disponibles en inventario.',
+            'imagen':               'La imagen se comprimirá y convertirá a WebP automáticamente.',
+            'destacado':            'Aparece en la sección de destacados (Sugeridos para ti).',
+            'disponible':           'Desactívalo para ocultarlo del catálogo sin eliminarlo.',
+            'stock':                'Pon 0 si no llevas control de inventario.',
+            'precio_grande':        'Precio para el tamaño grande del producto. Dejar vacío si solo hay un tamaño.',
+            'stock_grande':         'Número de unidades de tamaño grande disponibles en inventario.',
+            'descuento_porcentaje': 'Porcentaje de descuento (ej. 15 para 15% OFF). Deja en 0 para sin oferta. Si es mayor a 0, aparecerá automáticamente en las Ofertas Especiales de la página de inicio.',
         }
         widgets = {
-            'nombre':        forms.TextInput(),
-            'descripcion':   forms.Textarea(attrs={'rows': 3}),
-            'precio':        forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
-            'stock':         forms.NumberInput(attrs={'min': '0'}),
-            'precio_grande': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
-            'stock_grande':  forms.NumberInput(attrs={'min': '0'}),
-            'categoria':     forms.Select(),
+            'nombre':               forms.TextInput(),
+            'descripcion':          forms.Textarea(attrs={'rows': 3}),
+            'precio':               forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'stock':                forms.NumberInput(attrs={'min': '0'}),
+            'precio_grande':        forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+            'stock_grande':         forms.NumberInput(attrs={'min': '0'}),
+            'descuento_porcentaje': forms.NumberInput(attrs={'min': '0', 'max': '100'}),
+            'categoria':            forms.Select(),
         }
 
     def clean_nombre(self):
@@ -215,6 +219,12 @@ class ProductoForm(forms.ModelForm):
         if stock_grande is not None and stock_grande < 0:
             raise ValidationError('El stock grande no puede ser negativo.')
         return stock_grande
+
+    def clean_descuento_porcentaje(self):
+        desc = self.cleaned_data.get('descuento_porcentaje')
+        if desc is not None and (desc < 0 or desc > 100):
+            raise ValidationError('El porcentaje de descuento debe estar entre 0 y 100.')
+        return desc
 
 
 class CategoriaForm(forms.ModelForm):

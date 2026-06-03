@@ -91,6 +91,11 @@ class Producto(models.Model):
         verbose_name='Stock Grande (Opcional)',
         help_text='Número de unidades de tamaño grande disponibles en inventario.',
     )
+    descuento_porcentaje = models.PositiveIntegerField(
+        default=0,
+        verbose_name='Descuento (%)',
+        help_text='Porcentaje de descuento para el producto en ofertas especiales (ej. 15 para 15% OFF). Deja en 0 para sin descuento.',
+    )
     creado = models.DateTimeField(auto_now_add=True)
     actualizado = models.DateTimeField(auto_now=True)
 
@@ -108,9 +113,12 @@ class Producto(models.Model):
 
     @property
     def precio_descuento(self):
-        """Devuelve el precio del producto con un 15% de descuento por oferta especial."""
-        from decimal import Decimal
-        return (self.precio * Decimal('0.85')).quantize(Decimal('0.01'))
+        """Devuelve el precio del producto con su descuento correspondiente, o el precio normal si no tiene."""
+        if self.descuento_porcentaje > 0:
+            from decimal import Decimal
+            factor = Decimal(1 - self.descuento_porcentaje / 100.0)
+            return (self.precio * factor).quantize(Decimal('0.01'))
+        return self.precio
 
     # ── Compresión automática de imágenes ────────────────────────
     def _compress_image(self):

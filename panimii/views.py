@@ -20,13 +20,13 @@ logger = logging.getLogger(__name__)
 def home(request):
     """
     Vista de la página de inicio.
-    Consulta productos destacados y disponibles para mostrarlos
+    Consulta productos con descuento (>0%) y disponibles para mostrarlos
     en la sección de ofertas especiales al inicio.
-    Si no hay productos destacados, muestra los 3 productos disponibles más recientes como fallback.
+    Si no hay ofertas con descuento, muestra los 3 productos destacados o disponibles más recientes como fallback.
     """
-    ofertas = Producto.objects.filter(destacado=True, disponible=True)[:3]
+    ofertas = Producto.objects.filter(descuento_porcentaje__gt=0, disponible=True)[:3]
     if not ofertas.exists():
-        ofertas = Producto.objects.filter(disponible=True)[:3]
+        ofertas = Producto.objects.filter(disponible=True).order_by('-destacado', '-creado')[:3]
 
     ctx = {
         'ofertas': ofertas,
@@ -268,14 +268,22 @@ def agregar_al_carrito(request, producto_id):
     
     # Validar el precio y stock según el tamaño
     if tamano == 'grande' and producto.precio_grande:
-        precio_seleccionado = producto.precio_grande
+        precio_base = producto.precio_grande
         stock_seleccionado = producto.stock_grande
         tamano_label = 'Grande'
     else:
-        precio_seleccionado = producto.precio
+        precio_base = producto.precio
         stock_seleccionado = producto.stock
         tamano_label = 'Chico' if producto.precio_grande else ''
         tamano = 'chico'
+
+    # Aplicar descuento si existe
+    if producto.descuento_porcentaje > 0:
+        from decimal import Decimal
+        factor = Decimal(1 - producto.descuento_porcentaje / 100.0)
+        precio_seleccionado = (precio_base * factor).quantize(Decimal('0.01'))
+    else:
+        precio_seleccionado = precio_base
 
     carrito   = request.session.get('carrito', {})
     key       = f"{producto_id}_{tamano}" if producto.precio_grande else str(producto_id)
