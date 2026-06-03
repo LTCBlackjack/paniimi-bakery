@@ -43,6 +43,15 @@ class EditarClienteForm(forms.ModelForm):
             'email':      forms.EmailInput(),
         }
 
+    def __init__(self, *args, **kwargs):
+        requesting_user = kwargs.pop('requesting_user', None)
+        super().__init__(*args, **kwargs)
+        if not (requesting_user and requesting_user.is_superuser):
+            if 'is_staff' in self.fields:
+                self.fields['is_staff'].disabled = True
+            if 'is_superuser' in self.fields:
+                self.fields['is_superuser'].disabled = True
+
     def clean_email(self):
         email = self.cleaned_data.get('email', '').strip()
         qs = User.objects.filter(email=email).exclude(pk=self.instance.pk)
@@ -92,6 +101,17 @@ class CrearClienteForm(forms.ModelForm):
             'last_name':  forms.TextInput(),
             'email':      forms.EmailInput(),
         }
+
+    def __init__(self, *args, **kwargs):
+        requesting_user = kwargs.pop('requesting_user', None)
+        super().__init__(*args, **kwargs)
+        if not (requesting_user and requesting_user.is_superuser):
+            if 'is_staff' in self.fields:
+                self.fields['is_staff'].disabled = True
+                self.fields['is_staff'].initial = False
+            if 'is_superuser' in self.fields:
+                self.fields['is_superuser'].disabled = True
+                self.fields['is_superuser'].initial = False
 
     def clean_email(self):
         email = self.cleaned_data.get('email', '').strip()

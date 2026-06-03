@@ -322,7 +322,7 @@ def clientes(request):
 @staff_member_required(login_url='/auth/login/')
 def crear_cliente(request):
     """Formulario para añadir un nuevo usuario desde el panel."""
-    form = CrearClienteForm(request.POST or None)
+    form = CrearClienteForm(request.POST or None, requesting_user=request.user)
     if request.method == 'POST' and form.is_valid():
         usuario = form.save()
         messages.success(request, f'Usuario "{usuario.username}" creado correctamente.')
@@ -340,7 +340,13 @@ def crear_cliente(request):
 def editar_cliente(request, user_id):
     """Editar datos y permisos de un usuario existente."""
     usuario = get_object_or_404(User, pk=user_id)
-    form = EditarClienteForm(request.POST or None, instance=usuario)
+
+    # Protección: Solo superusuarios pueden editar a miembros de staff o superusuarios
+    if (usuario.is_staff or usuario.is_superuser) and not request.user.is_superuser:
+        messages.error(request, 'No tienes permisos para editar a miembros del staff o superusuarios.')
+        return redirect('panel_admin:clientes')
+
+    form = EditarClienteForm(request.POST or None, instance=usuario, requesting_user=request.user)
 
     if request.method == 'POST' and form.is_valid():
         form.save()
@@ -364,6 +370,7 @@ def eliminar_cliente(request, user_id):
     Protecciones:
     - No puedes eliminarte a ti mismo.
     - No puedes eliminar al último superusuario.
+    - Solo superusuarios pueden eliminar a otros staff o superusuarios.
     """
     usuario = get_object_or_404(User, pk=user_id)
 
@@ -375,6 +382,11 @@ def eliminar_cliente(request, user_id):
     # Protección: último superusuario
     if usuario.is_superuser and User.objects.filter(is_superuser=True).count() <= 1:
         messages.error(request, 'No puedes eliminar el único superusuario del sistema.')
+        return redirect('panel_admin:clientes')
+
+    # Protección: Solo superusuarios pueden eliminar a otros staff o superusuarios
+    if (usuario.is_staff or usuario.is_superuser) and not request.user.is_superuser:
+        messages.error(request, 'No tienes permisos para eliminar a miembros del staff o superusuarios.')
         return redirect('panel_admin:clientes')
 
     if request.method == 'POST':

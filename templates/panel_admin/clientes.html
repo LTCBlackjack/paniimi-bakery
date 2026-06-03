@@ -128,6 +128,7 @@
                     <td class="text-right">
                         <div class="flex items-center justify-end gap-2">
                             <!-- Editar -->
+                            {% if not usuario.is_staff and not usuario.is_superuser or request.user.is_superuser %}
                             <a href="{% url 'panel_admin:editar_cliente' usuario.pk %}"
                                id="btn-editar-{{ usuario.pk }}"
                                title="Editar usuario"
@@ -138,9 +139,11 @@
                                 </svg>
                                 Editar
                             </a>
+                            {% endif %}
 
                             <!-- Eliminar (no en cuenta propia) -->
                             {% if usuario != request.user %}
+                            {% if not usuario.is_staff and not usuario.is_superuser or request.user.is_superuser %}
                             <a href="{% url 'panel_admin:eliminar_cliente' usuario.pk %}"
                                id="btn-eliminar-{{ usuario.pk }}"
                                title="Eliminar usuario"
@@ -152,6 +155,7 @@
                                 </svg>
                                 Eliminar
                             </a>
+                            {% endif %}
                             {% endif %}
                         </div>
                     </td>
