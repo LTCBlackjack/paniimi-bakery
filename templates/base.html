@@ -1,10 +1,12 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="{% block meta_description %}Panimii Bakery — Repostería artesanal especializada en roles y galletas. Horneado con paciencia.{% endblock %}">
+    <meta name="description"
+        content="{% block meta_description %}Panimii Bakery — Repostería artesanal especializada en roles y galletas. Horneado con paciencia.{% endblock %}">
     <title>{% block title %}Panimii Bakery{% endblock %}</title>
 
     <!-- Favicon -->
@@ -13,7 +15,9 @@
     <!-- ── Google Fonts: Playfair Display (Serif) + Inter (Sans-serif) ── -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
 
     <!-- ── Tailwind CSS (CDN — desarrollo) ── -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,34 +26,34 @@
             theme: {
                 extend: {
                     colors: {
-                        primary:   'var(--color-primary)',  /* Negro puro / dinámico */
+                        primary: 'var(--color-primary)',  /* Negro puro / dinámico */
                         secondary: 'var(--color-secondary)',  /* Gris oscuro / dinámico */
-                        neutral:   'var(--color-neutral)',  /* Gris extra claro / dinámico */
-                        surface:   '#FFFFFF',  /* Blanco puro — fondo principal */
+                        neutral: 'var(--color-neutral)',  /* Gris extra claro / dinámico */
+                        surface: '#FFFFFF',  /* Blanco puro — fondo principal */
                     },
                     /* ── DESIGN.md › typography ── */
                     fontFamily: {
                         serif: ['"Playfair Display"', 'Georgia', 'serif'],
-                        sans:  ['"Inter"', 'system-ui', 'sans-serif'],
+                        sans: ['"Inter"', 'system-ui', 'sans-serif'],
                     },
                     fontSize: {
                         'display': ['48px', { lineHeight: '1.15', fontWeight: '700' }],
-                        'body':    ['16px', { lineHeight: '1.6' }],
+                        'body': ['16px', { lineHeight: '1.6' }],
                     },
                     /* ── DESIGN.md › rounded ── */
                     borderRadius: {
                         'editorial-none': '0px',  /* Bordes rectos — minimalismo puro  */
-                        'editorial-sm':   '4px',  /* Curvatura mínima — botones/cards  */
+                        'editorial-sm': '4px',  /* Curvatura mínima — botones/cards  */
                     },
                     /* ── DESIGN.md › spacing ── */
                     spacing: {
-                        'section':   '80px',  /* Padding vertical entre secciones */
+                        'section': '80px',  /* Padding vertical entre secciones */
                         'container': '24px',  /* Padding lateral de contenedores  */
                     },
                     /* ── Micro-interacciones: keyframes ── */
                     keyframes: {
                         fadeInUp: {
-                            '0%':   { opacity: '0', transform: 'translateY(28px)' },
+                            '0%': { opacity: '0', transform: 'translateY(28px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' },
                         },
                     },
@@ -159,86 +163,80 @@
             </a>
 
             <!-- Menú hamburguesa (móvil) -->
-            <button
-                id="nav-toggle"
-                class="md:hidden flex flex-col gap-[5px] p-2"
-                aria-label="Abrir menú"
-                aria-expanded="false"
-            >
+            <button id="nav-toggle" class="md:hidden flex flex-col gap-[5px] p-2" aria-label="Abrir menú"
+                aria-expanded="false">
                 <span class="block w-6 h-[2px] bg-primary transition-transform duration-300" id="bar-1"></span>
                 <span class="block w-6 h-[2px] bg-primary transition-opacity  duration-300" id="bar-2"></span>
                 <span class="block w-6 h-[2px] bg-primary transition-transform duration-300" id="bar-3"></span>
             </button>
 
             <!-- Enlaces de navegación -->
-            <ul
-                id="nav-menu"
-                class="hidden md:flex items-center gap-8 font-sans text-sm font-medium tracking-wide text-secondary
+            <ul id="nav-menu" class="hidden md:flex items-center gap-8 font-sans text-sm font-medium tracking-wide text-secondary
                        max-md:absolute max-md:top-full max-md:left-0 max-md:w-full max-md:bg-surface
                        max-md:flex-col max-md:items-center max-md:gap-0 max-md:border-b max-md:border-neutral
-                       max-md:shadow-sm"
-            >
+                       max-md:shadow-sm">
                 <!-- Links principales (siempre visibles) -->
-                <li><a href="{% url 'home' %}" class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Inicio</a></li>
-                <li><a href="{% url 'catalogo:lista' %}" class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Catálogo</a></li>
-                <li><a href="{% url 'nosotros' %}" class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Nosotros</a></li>
-                <li><a href="{% url 'contacto' %}" class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Contacto</a></li>
+                <li><a href="{% url 'home' %}"
+                        class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Inicio</a></li>
+                <li><a href="{% url 'catalogo:lista' %}"
+                        class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Catálogo</a></li>
+                <li><a href="{% url 'nosotros' %}"
+                        class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Nosotros</a></li>
+                <li><a href="{% url 'contacto' %}"
+                        class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">Contacto</a></li>
 
                 <!-- Separador visual (solo desktop) -->
                 <li class="hidden md:block w-px h-4 bg-neutral"></li>
 
                 {% if user.is_authenticated %}
-                    <!-- Usuario autenticado: nombre + Cerrar Sesión -->
+                <!-- Usuario autenticado: nombre + Cerrar Sesión -->
 
-                    <!-- Acceso rápido al Panel (solo staff/superusuario) -->
-                    {% if user.is_staff or user.is_superuser %}
-                    <li>
-                        <a href="{% url 'panel_admin:resumen' %}"
-                           class="flex items-center gap-1.5 py-4 md:py-0
+                <!-- Acceso rápido al Panel (solo staff/superusuario) -->
+                {% if user.is_staff or user.is_superuser %}
+                <li>
+                    <a href="{% url 'panel_admin:resumen' %}" class="flex items-center gap-1.5 py-4 md:py-0
                                   font-sans text-xs font-semibold tracking-widest uppercase
                                   bg-primary text-white px-3 py-1.5
                                   hover:opacity-80 transition-opacity duration-200">
-                            <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
-                            </svg>
-                            Panel Admin
-                        </a>
-                    </li>
-                    {% endif %}
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                        </svg>
+                        Panel Admin
+                    </a>
+                </li>
+                {% endif %}
 
-                    <li><a href="{% url 'dashboard' %}"
-                           class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">
+                <li><a href="{% url 'dashboard' %}"
+                        class="block py-4 md:py-0 hover:text-primary transition-colors duration-200">
                         {{ user.username }}
                     </a></li>
 
-                    <li>
-                        <form method="POST" action="{% url 'logout' %}" class="inline">
-                            {% csrf_token %}
-                            <button type="submit"
-                                    class="block py-4 md:py-0 text-secondary/60 hover:text-primary
+                <li>
+                    <form method="POST" action="{% url 'logout' %}" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="block py-4 md:py-0 text-secondary/60 hover:text-primary
                                            transition-colors duration-200">
-                                Cerrar Sesión
-                            </button>
-                        </form>
-                    </li>
+                            Cerrar Sesión
+                        </button>
+                    </form>
+                </li>
 
                 {% else %}
-                    <!-- Usuario anónimo: Iniciar Sesión -->
-                    <li>
-                        <a href="{% url 'login' %}"
-                           class="block py-4 md:py-0 font-semibold text-primary
+                <!-- Usuario anónimo: Iniciar Sesión -->
+                <li>
+                    <a href="{% url 'login' %}" class="block py-4 md:py-0 font-semibold text-primary
                                   border-b-2 border-primary pb-px
                                   hover:text-secondary hover:border-secondary
                                   transition-colors duration-200">
-                            Iniciar Sesión
-                        </a>
-                    </li>
+                        Iniciar Sesión
+                    </a>
+                </li>
                 {% endif %}
 
                 <!-- Carrito: SIEMPRE visible (sesión funciona para anónimos y autenticados) -->
                 <li>
-                    <a href="{% url 'ver_carrito' %}"
-                       class="flex items-center gap-1 py-4 md:py-0
+                    <a href="{% url 'ver_carrito' %}" class="flex items-center gap-1 py-4 md:py-0
                               font-sans text-xs font-semibold tracking-widest uppercase
                               border border-neutral px-3 py-1.5
                               hover:border-primary transition-colors duration-200">
@@ -259,7 +257,8 @@
                     flex items-center justify-between gap-4
                     animate-[fadeIn_0.3s_ease]">
             <span>{{ message }}</span>
-            <button onclick="this.parentElement.remove()" class="text-white/60 hover:text-white text-lg leading-none">×</button>
+            <button onclick="this.parentElement.remove()"
+                class="text-white/60 hover:text-white text-lg leading-none">×</button>
         </div>
         {% endfor %}
     </div>
@@ -293,20 +292,26 @@
 
                 <!-- Columna 2: Navegación -->
                 <div>
-                    <h4 class="font-sans text-xs font-semibold tracking-widest uppercase text-white/40 mb-4">Navegación</h4>
+                    <h4 class="font-sans text-xs font-semibold tracking-widest uppercase text-white/40 mb-4">Navegación
+                    </h4>
                     <ul class="space-y-2 text-sm">
-                        <li><a href="{% url 'home' %}" class="text-white/70 hover:text-white transition-colors duration-200">Inicio</a></li>
-                        <li><a href="{% url 'catalogo:lista' %}" class="text-white/70 hover:text-white transition-colors duration-200">Catálogo</a></li>
-                        <li><a href="{% url 'nosotros' %}" class="text-white/70 hover:text-white transition-colors duration-200">Nosotros</a></li>
-                        <li><a href="{% url 'contacto' %}" class="text-white/70 hover:text-white transition-colors duration-200">Contacto</a></li>
+                        <li><a href="{% url 'home' %}"
+                                class="text-white/70 hover:text-white transition-colors duration-200">Inicio</a></li>
+                        <li><a href="{% url 'catalogo:lista' %}"
+                                class="text-white/70 hover:text-white transition-colors duration-200">Catálogo</a></li>
+                        <li><a href="{% url 'nosotros' %}"
+                                class="text-white/70 hover:text-white transition-colors duration-200">Nosotros</a></li>
+                        <li><a href="{% url 'contacto' %}"
+                                class="text-white/70 hover:text-white transition-colors duration-200">Contacto</a></li>
                     </ul>
                 </div>
 
                 <!-- Columna 3: Contacto -->
                 <div>
-                    <h4 class="font-sans text-xs font-semibold tracking-widest uppercase text-white/40 mb-4">Contacto</h4>
+                    <h4 class="font-sans text-xs font-semibold tracking-widest uppercase text-white/40 mb-4">Contacto
+                    </h4>
                     <ul class="space-y-2 text-sm text-white/70">
-                        <li>contacto@paniimi.com(PRÓXIMAMENTE)</li>
+                        <li>paniimibakery@gmail.com</li>
                         <li>Mérida,Yucatán México</li>
                     </ul>
                 </div>
@@ -314,7 +319,8 @@
             </div>
 
             <!-- Línea divisoria + Copyright -->
-            <div class="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div
+                class="mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
                 <p class="text-white/40 text-xs tracking-wide">
                     &copy; {% now "Y" %} Panimii Bakery. Todos los derechos reservados.
                 </p>
@@ -329,10 +335,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const toggle = document.getElementById('nav-toggle');
-            const menu   = document.getElementById('nav-menu');
-            const bar1   = document.getElementById('bar-1');
-            const bar2   = document.getElementById('bar-2');
-            const bar3   = document.getElementById('bar-3');
+            const menu = document.getElementById('nav-menu');
+            const bar1 = document.getElementById('bar-1');
+            const bar2 = document.getElementById('bar-2');
+            const bar3 = document.getElementById('bar-3');
 
             toggle.addEventListener('click', () => {
                 const isOpen = menu.classList.toggle('hidden');
@@ -340,13 +346,13 @@
                 if (!isOpen) {
                     menu.classList.add('flex');
                     bar1.style.transform = 'rotate(45deg) translate(5px, 5px)';
-                    bar2.style.opacity   = '0';
+                    bar2.style.opacity = '0';
                     bar3.style.transform = 'rotate(-45deg) translate(5px, -5px)';
                     toggle.setAttribute('aria-expanded', 'true');
                 } else {
                     menu.classList.remove('flex');
                     bar1.style.transform = '';
-                    bar2.style.opacity   = '';
+                    bar2.style.opacity = '';
                     bar3.style.transform = '';
                     toggle.setAttribute('aria-expanded', 'false');
                 }
@@ -370,7 +376,7 @@
                     });
                 },
                 {
-                    threshold:  0.08,
+                    threshold: 0.08,
                     rootMargin: '0px 0px -20px 0px',
                 }
             );
@@ -383,4 +389,5 @@
     {% block extra_js %}{% endblock %}
 
 </body>
+
 </html>
