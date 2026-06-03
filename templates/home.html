@@ -9,8 +9,22 @@
      SECCIÓN 1 — HERO
      Micro-interacción: Fade-in escalonado al cargar
      ═══════════════════════════════════════════════════ -->
-<section id="hero-section" class="section-surface overflow-hidden">
-    <div class="max-w-7xl mx-auto px-container">
+<section id="hero-section" class="section-surface overflow-hidden relative">
+    {% if temporada_activa == 'verano' %}
+    <!-- Contenedor para el fondo doble de verano (oso_verano5 a la izquierda, oso_verano4 a la derecha) -->
+    <div id="hero-double-bg" class="absolute inset-0 z-0 hidden flex no-print">
+        <div class="w-1/2 h-full relative">
+            <img src="{% static 'img/oso_verano5.jpeg' %}" alt="Verano fondo izquierdo" class="w-full h-full object-cover">
+        </div>
+        <div class="w-1/2 h-full relative">
+            <img src="{% static 'img/oso_verano4.jpeg' %}" alt="Verano fondo derecho" class="w-full h-full object-cover">
+        </div>
+        <!-- Capa de overlay para integrar con la paleta de colores y mejorar legibilidad del texto -->
+        <div class="absolute inset-0 pointer-events-none" style="background-color: rgba(252, 246, 229, 0.88);"></div>
+    </div>
+    {% endif %}
+
+    <div class="max-w-7xl mx-auto px-container relative z-10">
         <div id="hero-grid" class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 items-center">
 
             <!-- Bloque de texto (cols 1–5) -->
@@ -41,7 +55,7 @@
                 <!-- [2] Párrafo — 200ms después -->
                 <p class="font-sans text-base text-secondary leading-relaxed mb-10 max-w-sm
                            animate-fade-in-up"
-                   style="animation-delay: 200ms;">
+                    style="animation-delay: 200ms;">
                     {% if temporada_activa == 'primavera' %}
                         El renacer de los sabores más puros. Explora recetas suaves e infusionadas con toques florales y la calidez del viento primaveral.
                     {% elif temporada_activa == 'verano' %}
@@ -125,20 +139,14 @@
                 capTextEl.textContent = `"${randomItem.caption}"`;
             }
 
-            const sectionEl = document.getElementById('hero-section');
-            const gridEl = document.getElementById('hero-grid');
             const textColEl = document.getElementById('hero-text-col');
             const imgColEl = document.getElementById('hero-img-col');
-            const bgFrameEl = document.getElementById('hero-bg-frame');
-            const captionEl = document.getElementById('hero-caption');
+            const doubleBgEl = document.getElementById('hero-double-bg');
 
             if (randomItem.type === 'background') {
-                // Configurar como fondo de la sección
-                if (sectionEl) {
-                    sectionEl.style.backgroundImage = `linear-gradient(rgba(252, 246, 229, 0.88), rgba(252, 246, 229, 0.88)), url('${randomItem.url}')`;
-                    sectionEl.style.backgroundSize = 'cover';
-                    sectionEl.style.backgroundPosition = 'center';
-                    sectionEl.style.backgroundRepeat = 'no-repeat';
+                // Mostrar el contenedor de fondo doble
+                if (doubleBgEl) {
+                    doubleBgEl.classList.remove('hidden');
                 }
                 
                 // Ocultar columna de imagen del grid
@@ -160,6 +168,27 @@
                 }
             } else {
                 // Caso ilustración estándar en el lateral derecho
+                if (doubleBgEl) {
+                    doubleBgEl.classList.add('hidden');
+                }
+                
+                // Mostrar columna de imagen del grid
+                if (imgColEl) {
+                    imgColEl.classList.remove('hidden');
+                }
+                
+                // Restaurar texto a su estado original (5 cols)
+                if (textColEl) {
+                    textColEl.classList.add('lg:col-span-5', 'lg:pr-12');
+                    textColEl.classList.remove('lg:col-span-12', 'text-center', 'py-16', 'lg:py-24');
+                    
+                    const pEl = textColEl.querySelector('p');
+                    if (pEl) {
+                        pEl.classList.add('max-w-sm');
+                        pEl.classList.remove('max-w-xl', 'mx-auto');
+                    }
+                }
+
                 if (imgEl) {
                     imgEl.src = randomItem.url;
                 }
