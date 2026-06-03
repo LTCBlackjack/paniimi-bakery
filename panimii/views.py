@@ -289,13 +289,13 @@ def agregar_al_carrito(request, producto_id):
     key       = f"{producto_id}_{tamano}" if producto.precio_grande else str(producto_id)
 
     if key in carrito:
-        if carrito[key]['cantidad'] < stock_seleccionado:
+        if stock_seleccionado == 0 or carrito[key]['cantidad'] < stock_seleccionado:
             carrito[key]['cantidad'] += 1
             messages.success(request, f'"{producto.nombre}"{f" ({tamano_label})" if tamano_label else ""} añadido al carrito.')
         else:
             messages.error(request, f'No hay suficiente stock disponible para "{producto.nombre}" en tamaño {tamano_label or "Normal"}.')
     else:
-        if stock_seleccionado > 0:
+        if stock_seleccionado == 0 or stock_seleccionado > 0:
             carrito[key] = {
                 'producto_id': producto.id,
                 'nombre':   producto.nombre,
@@ -333,7 +333,7 @@ def actualizar_carrito(request, producto_id):
             try:
                 producto = ProductoModel.objects.get(id=prod_id)
                 stock_max = producto.stock_grande if tamano_label == 'Grande' else producto.stock
-                if carrito[key]['cantidad'] < stock_max:
+                if stock_max == 0 or carrito[key]['cantidad'] < stock_max:
                     carrito[key]['cantidad'] += 1
                 else:
                     messages.error(request, f'No hay suficiente stock para "{producto.nombre}" en tamaño {tamano_label or "Normal"}.')
