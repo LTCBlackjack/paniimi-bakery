@@ -76,28 +76,28 @@
         </div>
 
         <!-- VERANO -->
-        <div class="border {% if temporada_actual == 'verano' %}border-[#8C4730] shadow-md{% else %}border-zinc-200 hover:border-[#8C4730]/50{% endif %} bg-white p-6 flex flex-col justify-between transition-all duration-300">
+        <div class="border {% if temporada_actual == 'verano' %}border-[#1B3B6F] shadow-md{% else %}border-zinc-200 hover:border-[#1B3B6F]/50{% endif %} bg-white p-6 flex flex-col justify-between transition-all duration-300">
             <div>
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-serif text-xl font-bold text-[#8C4730]">Verano ☀️</h3>
+                    <h3 class="font-serif text-xl font-bold text-[#1B3B6F]">Verano ☀️</h3>
                     {% if temporada_actual == 'verano' %}
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#8C4730] text-white uppercase tracking-wider">Activo</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#1B3B6F] text-white uppercase tracking-wider">Activo</span>
                     {% endif %}
                 </div>
                 <p class="text-xs text-zinc-500 mb-6 leading-relaxed">
-                    Sol radiante y calidez. Un elegante terracota tostado inspirado en la arcilla caliente, atardeceres dorados y la dulzura soleada.
+                    Sol radiante y calidez veraniega. Una paleta fresca y alegre en azul, amarillo y spice mustard.
                 </p>
                 <!-- Preview de Colores -->
                 <div class="flex gap-2 mb-8">
-                    <div class="w-8 h-8 rounded-full bg-[#8C4730] border border-zinc-200 shadow-sm" title="Primario: Terracota"></div>
-                    <div class="w-8 h-8 rounded-full bg-[#A36A58] border border-zinc-200 shadow-sm" title="Secundario: Arena"></div>
-                    <div class="w-8 h-8 rounded-full bg-[#FAF8F6] border border-zinc-200 shadow-sm" title="Neutro: Fondo Cálido"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#1B3B6F] border border-zinc-200 shadow-sm" title="Primario: Azul"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#C27D38] border border-zinc-200 shadow-sm" title="Secundario: Spice Mustard"></div>
+                    <div class="w-8 h-8 rounded-full bg-[#FCF6E5] border border-zinc-200 shadow-sm" title="Neutro: Amarillo Suave"></div>
                 </div>
             </div>
             <form method="POST" action="{% url 'panel_admin:estaciones' %}">
                 {% csrf_token %}
                 <input type="hidden" name="temporada" value="verano">
-                <button type="submit" class="w-full btn-admin text-center border-[#8C4730] {% if temporada_actual == 'verano' %}opacity-50 pointer-events-none{% else %}bg-[#8C4730] hover:bg-[#8C4730]/90{% endif %}">
+                <button type="submit" class="w-full btn-admin text-center border-[#1B3B6F] {% if temporada_actual == 'verano' %}opacity-50 pointer-events-none{% else %}bg-[#1B3B6F] hover:bg-[#1B3B6F]/90{% endif %}">
                     Activar Verano
                 </button>
             </form>
