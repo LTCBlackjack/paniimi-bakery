@@ -7,7 +7,9 @@
 
 <!-- ═══════════════════════════════════════════════════════
      SECCIÓN 1 — HERO
-     Micro-interacción: Fade-in escalonado al carg<section class="section-surface overflow-hidden">
+     Micro-interacción: Fade-in escalonado al cargar
+     ═══════════════════════════════════════════════════ -->
+<section id="hero-section" class="section-surface overflow-hidden">
     <div class="max-w-7xl mx-auto px-container">
         <div id="hero-grid" class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-0 items-center">
 
@@ -72,7 +74,7 @@
                 <div class="relative z-10 overflow-hidden">
                     <img
                         id="hero-img"
-                        src="{% static 'img/' %}{% if temporada_activa == 'primavera' %}oso_primavera.webp{% elif temporada_activa == 'verano' %}verano_flotador.png{% elif temporada_activa == 'otono' %}oso_otono.webp{% elif temporada_activa == 'invierno' %}oso_invierno.webp{% else %}oso_acostado.webp{% endif %}"
+                        src="{% static 'img/' %}{% if temporada_activa == 'primavera' %}oso_primavera.webp{% elif temporada_activa == 'verano' %}oso_verano1.jpeg{% elif temporada_activa == 'otono' %}oso_otono.webp{% elif temporada_activa == 'invierno' %}oso_invierno.webp{% else %}oso_acostado.webp{% endif %}"
                         alt="Oso polar ilustrativo de temporada"
                         class="w-full h-auto object-contain transition-transform duration-700 ease-out hover:scale-[1.04]"
                     >
@@ -104,43 +106,50 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const summerImages = [
-                { type: 'illustration', url: "{% static 'img/verano_dj.png' %}", caption: "¡Que la música y la dulzura no paren! 🎧🐻" },
-                { type: 'illustration', url: "{% static 'img/verano_flotador.png' %}", caption: "Relajación total con sabor a galleta. 🍪☀️" },
-                { type: 'illustration', url: "{% static 'img/verano_futbol.png' %}", caption: "¡El sabor que anota un touchdown! 🏈🐻" },
-                { type: 'banner', url: "{% static 'img/verano_agua.png' %}", caption: "Felicidad flotante en un mar de dulzura. 🌊🍪" },
-                { type: 'banner', url: "{% static 'img/verano_isla.png' %}", caption: "Un oasis de sabor en tu paladar. 🌴🍪" }
+                { type: 'illustration', url: "{% static 'img/oso_verano1.jpeg' %}", caption: "Sabor fresco y radiante bajo el sol. ☀️" },
+                { type: 'illustration', url: "{% static 'img/oso_verano2.jpeg' %}", caption: "¡Disfrutando el verano con Paniimi! 🐻🏈" },
+                { type: 'illustration', url: "{% static 'img/oso_verano3.jpeg' %}", caption: "¡Que la música y la dulzura no paren! 🎧🐻" },
+                { type: 'background', url: "{% static 'img/oso_verano4.jpeg' %}", caption: "Relajación total con sabor a galleta. 🍪🌊" },
+                { type: 'background', url: "{% static 'img/oso_verano5.jpeg' %}", caption: "Un oasis de sabor en tu paladar. 🌴☀️" },
+                { type: 'illustration', url: "{% static 'img/oso_verano6.jpeg' %}", caption: "Felicidad flotante en un mar de dulzura. 🌊🐻" }
             ];
 
-            // Seleccionar aleatoriamente una de las 5 imágenes
+            // Seleccionar aleatoriamente una de las 6 imágenes
             const randomItem = summerImages[Math.floor(Math.random() * summerImages.length)];
             
             // Actualizar la imagen y su caption
             const imgEl = document.getElementById('hero-img');
             const capTextEl = document.getElementById('hero-caption-text');
             
-            if (imgEl) {
-                imgEl.src = randomItem.url;
-            }
             if (capTextEl) {
                 capTextEl.textContent = `"${randomItem.caption}"`;
             }
 
-            // Si es un banner horizontal (las 2 últimas imágenes)
-            if (randomItem.type === 'banner') {
-                const gridEl = document.getElementById('hero-grid');
-                const textColEl = document.getElementById('hero-text-col');
-                const imgColEl = document.getElementById('hero-img-col');
-                const bgFrameEl = document.getElementById('hero-bg-frame');
-                const captionEl = document.getElementById('hero-caption');
+            const sectionEl = document.getElementById('hero-section');
+            const gridEl = document.getElementById('hero-grid');
+            const textColEl = document.getElementById('hero-text-col');
+            const imgColEl = document.getElementById('hero-img-col');
+            const bgFrameEl = document.getElementById('hero-bg-frame');
+            const captionEl = document.getElementById('hero-caption');
 
-                if (gridEl && textColEl && imgColEl) {
-                    // Cambiar el layout de grid de columnas a layout centrado vertical
-                    gridEl.classList.remove('lg:grid-cols-12', 'lg:gap-0');
-                    gridEl.classList.add('flex', 'flex-col', 'items-center', 'text-center');
-                    
-                    // Hacer la columna de texto completa en ancho
+            if (randomItem.type === 'background') {
+                // Configurar como fondo de la sección
+                if (sectionEl) {
+                    sectionEl.style.backgroundImage = `linear-gradient(rgba(252, 246, 229, 0.88), rgba(252, 246, 229, 0.88)), url('${randomItem.url}')`;
+                    sectionEl.style.backgroundSize = 'cover';
+                    sectionEl.style.backgroundPosition = 'center';
+                    sectionEl.style.backgroundRepeat = 'no-repeat';
+                }
+                
+                // Ocultar columna de imagen del grid
+                if (imgColEl) {
+                    imgColEl.classList.add('hidden');
+                }
+                
+                // Hacer el texto de ancho completo y centrado
+                if (textColEl) {
                     textColEl.classList.remove('lg:col-span-5', 'lg:pr-12');
-                    textColEl.classList.add('w-full', 'max-w-2xl', 'mb-8');
+                    textColEl.classList.add('lg:col-span-12', 'text-center', 'py-16', 'lg:py-24');
                     
                     // Centrar el párrafo
                     const pEl = textColEl.querySelector('p');
@@ -148,27 +157,11 @@
                         pEl.classList.remove('max-w-sm');
                         pEl.classList.add('max-w-xl', 'mx-auto');
                     }
-
-                    // Hacer que la columna de imagen sea de ancho completo de banner
-                    imgColEl.classList.remove('lg:col-span-7');
-                    imgColEl.classList.add('w-full', 'max-w-5xl');
-                    
-                    // Ocultar el marco gris de fondo
-                    if (bgFrameEl) {
-                        bgFrameEl.classList.add('hidden');
-                    }
-                    
-                    // Ajustar las clases de la imagen para que funcione como un banner panorámico
-                    if (imgEl) {
-                        imgEl.classList.remove('object-contain');
-                        imgEl.classList.add('w-full', 'h-auto', 'max-h-[380px]', 'object-cover', 'border', 'border-neutral/80');
-                    }
-
-                    // Posicionar el caption en la esquina derecha del banner
-                    if (captionEl) {
-                        captionEl.classList.remove('bottom-8', 'left-0');
-                        captionEl.classList.add('bottom-4', 'right-4');
-                    }
+                }
+            } else {
+                // Caso ilustración estándar en el lateral derecho
+                if (imgEl) {
+                    imgEl.src = randomItem.url;
                 }
             }
         });
