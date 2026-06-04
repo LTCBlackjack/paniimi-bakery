@@ -1,6 +1,7 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,9 @@
     <!-- Google Fonts: Playfair Display + Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400;1,700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
 
     <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -19,15 +22,15 @@
             theme: {
                 extend: {
                     colors: {
-                        primary:   '#000000',
+                        primary: '#000000',
                         secondary: '#4A4A4A',
-                        neutral:   '#F9F9F9',
-                        surface:   '#FFFFFF',
-                        cream:     '#E8E3DD',
+                        neutral: '#F9F9F9',
+                        surface: '#FFFFFF',
+                        cream: '#E8E3DD',
                     },
                     fontFamily: {
                         serif: ['"Playfair Display"', 'Georgia', 'serif'],
-                        sans:  ['"Inter"', 'system-ui', 'sans-serif'],
+                        sans: ['"Inter"', 'system-ui', 'sans-serif'],
                     },
                 },
             },
@@ -40,20 +43,23 @@
             transform: translateX(-100%);
             opacity: 0;
             transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-                        opacity   0.5s  ease;
+                opacity 0.5s ease;
         }
+
         #panel-right {
             transform: translateX(100%);
             opacity: 0;
             transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
-                        opacity   0.5s  ease;
+                opacity 0.5s ease;
         }
+
         /* Clase que el JS añade 60ms después del load */
         .book-open #panel-left,
         .book-open #panel-right {
             transform: translateX(0);
             opacity: 1;
         }
+
         /* El panel derecho entra 80ms más tarde (efecto asimétrico) */
         .book-open #panel-right {
             transition-delay: 80ms;
@@ -72,183 +78,172 @@
             outline: none;
             transition: border-color 0.2s ease;
         }
-        .input-login::placeholder { color: #B0A89F; }
-        .input-login:focus        { border-color: #000; }
+
+        .input-login::placeholder {
+            color: #B0A89F;
+        }
+
+        .input-login:focus {
+            border-color: #000;
+        }
 
         /* ── Scrollbar oculta en el panel derecho en móvil ───────── */
-        .scroll-hidden::-webkit-scrollbar { display: none; }
-        .scroll-hidden { -ms-overflow-style: none; scrollbar-width: none; }
+        .scroll-hidden::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scroll-hidden {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
     </style>
 </head>
 
 <body class="overflow-hidden">
 
-<!-- ══════════════════════════════════════════════════════════════
+    <!-- ══════════════════════════════════════════════════════════════
      CONTENEDOR SPLIT-SCREEN
      ══════════════════════════════════════════════════════════ -->
-<div class="flex h-screen w-screen overflow-hidden" id="book-container">
+    <div class="flex h-screen w-screen overflow-hidden" id="book-container">
 
-    <!-- ══ PANEL IZQUIERDO — Imagen editorial ══════════════════ -->
-    <div id="panel-left"
-         class="hidden lg:flex flex-col justify-end w-1/2 h-full relative overflow-hidden"
-         style="background-color: #E8E3DD;">
+        <!-- ══ PANEL IZQUIERDO — Imagen editorial ══════════════════ -->
+        <div id="panel-left" class="hidden lg:flex flex-col justify-end w-1/2 h-full relative overflow-hidden"
+            style="background-color: #E8E3DD;">
 
-        <!-- Imagen de fondo: torre de galletas + osito -->
-        <img
-            src="{% static 'img/oso_acostado.webp' %}"
-            alt="Oso polar descansando sobre una torre de galletas"
-            class="absolute inset-0 w-full h-full object-cover object-top"
-            style="mix-blend-mode: multiply; opacity: 0.92;"
-        >
+            <!-- Imagen de fondo: torre de galletas + osito -->
+            <img src="{% static 'img/pinguino.jpeg' %}" alt="Oso polar descansando sobre una torre de galletas"
+                class="absolute inset-0 w-full h-full object-cover object-top"
+                style="mix-blend-mode: multiply; opacity: 0.92;">
 
-        <!-- Overlay gradiente inferior para legibilidad de la frase -->
-        <div class="absolute inset-0 bg-gradient-to-t from-[#c4bdb4]/80 via-transparent to-transparent"></div>
+            <!-- Overlay gradiente inferior para legibilidad de la frase -->
+            <div class="absolute inset-0 bg-gradient-to-t from-[#c4bdb4]/80 via-transparent to-transparent"></div>
 
-        <!-- Frase editorial en la esquina inferior izquierda -->
-        <div class="relative z-10 p-10 pb-12">
-            <p class="font-serif italic text-2xl lg:text-3xl text-primary/90 leading-snug max-w-xs"
-               style="font-style: italic;">
-                "Momentos que se deshacen en la boca."
-            </p>
-        </div>
-    </div>
-
-
-    <!-- ══ PANEL DERECHO — Formulario ══════════════════════════ -->
-    <div id="panel-right"
-         class="flex flex-col w-full lg:w-1/2 h-full overflow-y-auto scroll-hidden"
-         style="background-color: #F7F4F0;">
-
-        <!-- Barra superior: volver a la tienda -->
-        <div class="flex justify-end px-8 pt-6 pb-4">
-            <a href="{% url 'home' %}"
-               class="font-sans text-xs text-secondary/50 hover:text-primary transition-colors duration-200 tracking-wide">
-                ← Volver a la tienda
-            </a>
+            <!-- Frase editorial en la esquina inferior izquierda -->
+            <div class="relative z-10 p-10 pb-12">
+                <p class="font-serif italic text-2xl lg:text-3xl text-primary/90 leading-snug max-w-xs"
+                    style="font-style: italic;">
+                    "Momentos que se deshacen en la boca."
+                </p>
+            </div>
         </div>
 
-        <!-- Contenido centrado verticalmente -->
-        <div class="flex-1 flex flex-col justify-center px-10 sm:px-16 lg:px-20 py-8 max-w-md mx-auto w-full">
 
-            <!-- Logo pequeño -->
-            <div class="mb-10">
+        <!-- ══ PANEL DERECHO — Formulario ══════════════════════════ -->
+        <div id="panel-right" class="flex flex-col w-full lg:w-1/2 h-full overflow-y-auto scroll-hidden"
+            style="background-color: #F7F4F0;">
+
+            <!-- Barra superior: volver a la tienda -->
+            <div class="flex justify-end px-8 pt-6 pb-4">
                 <a href="{% url 'home' %}"
-                   class="inline-block bg-primary text-white font-serif text-sm font-bold
-                          tracking-widest px-4 py-3 uppercase">
-                    PANIIMI<br>
-                    <span class="font-sans font-normal text-[9px] tracking-[0.3em] opacity-70">BAKERY</span>
+                    class="font-sans text-xs text-secondary/50 hover:text-primary transition-colors duration-200 tracking-wide">
+                    ← Volver a la tienda
                 </a>
             </div>
 
-            <!-- Título + emoji decorativo -->
-            <div class="flex items-start gap-3 mb-2">
-                <h1 class="font-serif italic text-5xl font-normal text-primary leading-none">
-                    Bienvenido
-                </h1>
-                <img
-                    src="{% static 'img/oso_comiendo_galleta.webp' %}"
-                    alt=""
-                    class="w-12 h-12 object-contain opacity-80 mt-1 flex-shrink-0"
-                >
-            </div>
-            <p class="font-sans text-sm text-secondary/60 mb-10 leading-relaxed">
-                Ingresa para gestionar tus pedidos y puntos de lealtad.
-            </p>
+            <!-- Contenido centrado verticalmente -->
+            <div class="flex-1 flex flex-col justify-center px-10 sm:px-16 lg:px-20 py-8 max-w-md mx-auto w-full">
 
-            <!-- Errores de autenticación -->
-            {% if form.non_field_errors %}
-            <div class="bg-red-50 border-l-2 border-red-400 px-4 py-3 mb-6">
-                {% for error in form.non_field_errors %}
-                <p class="font-sans text-xs text-red-600">{{ error }}</p>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <!-- Formulario -->
-            <form method="POST" action="{% url 'login' %}" novalidate class="space-y-8">
-                {% csrf_token %}
-                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
-
-                <!-- Campo: Correo / Usuario -->
-                <div>
-                    <label for="id_username"
-                           class="font-sans text-[10px] font-semibold tracking-[0.3em] uppercase text-secondary/50 block mb-2">
-                        Correo electrónico
-                    </label>
-                    <input
-                        type="text"
-                        name="username"
-                        id="id_username"
-                        placeholder="tu@email.com"
-                        autocomplete="username"
-                        autofocus
-                        class="input-login {% if form.username.errors %}border-b-red-400{% endif %}"
-                    >
-                    {% if form.username.errors %}
-                    <p class="font-sans text-[11px] text-red-500 mt-1">{{ form.username.errors|join:', ' }}</p>
-                    {% endif %}
+                <!-- Logo pequeño -->
+                <div class="mb-10">
+                    <a href="{% url 'home' %}" class="inline-block bg-primary text-white font-serif text-sm font-bold
+                          tracking-widest px-4 py-3 uppercase">
+                        PANIIMI<br>
+                        <span class="font-sans font-normal text-[9px] tracking-[0.3em] opacity-70">BAKERY</span>
+                    </a>
                 </div>
 
-                <!-- Campo: Contraseña -->
-                <div>
-                    <div class="flex justify-between items-baseline mb-2">
-                        <label for="id_password"
-                               class="font-sans text-[10px] font-semibold tracking-[0.3em] uppercase text-secondary/50">
-                            Contraseña
+                <!-- Título + emoji decorativo -->
+                <div class="flex items-start gap-3 mb-2">
+                    <h1 class="font-serif italic text-5xl font-normal text-primary leading-none">
+                        Bienvenido
+                    </h1>
+                    <img src="{% static 'img/oso_comiendo_galleta.webp' %}" alt=""
+                        class="w-12 h-12 object-contain opacity-80 mt-1 flex-shrink-0">
+                </div>
+                <p class="font-sans text-sm text-secondary/60 mb-10 leading-relaxed">
+                    Ingresa para gestionar tus pedidos y puntos de lealtad.
+                </p>
+
+                <!-- Errores de autenticación -->
+                {% if form.non_field_errors %}
+                <div class="bg-red-50 border-l-2 border-red-400 px-4 py-3 mb-6">
+                    {% for error in form.non_field_errors %}
+                    <p class="font-sans text-xs text-red-600">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Formulario -->
+                <form method="POST" action="{% url 'login' %}" novalidate class="space-y-8">
+                    {% csrf_token %}
+                    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+                    <!-- Campo: Correo / Usuario -->
+                    <div>
+                        <label for="id_username"
+                            class="font-sans text-[10px] font-semibold tracking-[0.3em] uppercase text-secondary/50 block mb-2">
+                            Correo electrónico
                         </label>
-                        <a href="{% url 'password_reset' %}"
-                           class="font-sans text-[10px] text-secondary/40 hover:text-primary
-                                  transition-colors duration-200 tracking-wide">
-                            ¿Olvidaste tu contraseña?
-                        </a>
+                        <input type="text" name="username" id="id_username" placeholder="tu@email.com"
+                            autocomplete="username" autofocus
+                            class="input-login {% if form.username.errors %}border-b-red-400{% endif %}">
+                        {% if form.username.errors %}
+                        <p class="font-sans text-[11px] text-red-500 mt-1">{{ form.username.errors|join:', ' }}</p>
+                        {% endif %}
                     </div>
-                    <input
-                        type="password"
-                        name="password"
-                        id="id_password"
-                        placeholder="••••••••"
-                        autocomplete="current-password"
-                        class="input-login"
-                    >
-                </div>
 
-                <!-- Botón Iniciar Sesión -->
-                <button type="submit"
-                        class="w-full bg-primary text-white font-sans text-xs font-semibold
+                    <!-- Campo: Contraseña -->
+                    <div>
+                        <div class="flex justify-between items-baseline mb-2">
+                            <label for="id_password"
+                                class="font-sans text-[10px] font-semibold tracking-[0.3em] uppercase text-secondary/50">
+                                Contraseña
+                            </label>
+                            <a href="{% url 'password_reset' %}" class="font-sans text-[10px] text-secondary/40 hover:text-primary
+                                  transition-colors duration-200 tracking-wide">
+                                ¿Olvidaste tu contraseña?
+                            </a>
+                        </div>
+                        <input type="password" name="password" id="id_password" placeholder="••••••••"
+                            autocomplete="current-password" class="input-login">
+                    </div>
+
+                    <!-- Botón Iniciar Sesión -->
+                    <button type="submit" class="w-full bg-primary text-white font-sans text-xs font-semibold
                                tracking-[0.25em] uppercase py-4
                                hover:opacity-80 active:opacity-100
                                transition-opacity duration-200">
-                    Iniciar Sesión
-                </button>
-            </form>
+                        Iniciar Sesión
+                    </button>
+                </form>
 
-            <!-- Pie: ir a registro -->
-            <p class="font-sans text-sm text-secondary/50 mt-10 text-center">
-                ¿Aún no tienes cuenta?
-                <a href="{% url 'registro' %}"
-                   class="text-primary font-semibold
+                <!-- Pie: ir a registro -->
+                <p class="font-sans text-sm text-secondary/50 mt-10 text-center">
+                    ¿Aún no tienes cuenta?
+                    <a href="{% url 'registro' %}" class="text-primary font-semibold
                           border-b border-primary/30 pb-px
                           hover:border-primary transition-colors duration-200 ml-1">
-                    Regístrate aquí
-                </a>
-            </p>
+                        Regístrate aquí
+                    </a>
+                </p>
 
-        </div><!-- /flex-1 -->
-    </div><!-- /panel-right -->
+            </div><!-- /flex-1 -->
+        </div><!-- /panel-right -->
 
-</div><!-- /book-container -->
+    </div><!-- /book-container -->
 
 
-<!-- ── Script: Animación apertura de libro ─────────────────── -->
-<script>
-    // Esperamos un frame para que el navegador pinte el estado inicial
-    // (opacidad 0 + translate) antes de disparar la transición.
-    requestAnimationFrame(function () {
-        setTimeout(function () {
-            document.getElementById('book-container').classList.add('book-open');
-        }, 60);
-    });
-</script>
+    <!-- ── Script: Animación apertura de libro ─────────────────── -->
+    <script>
+        // Esperamos un frame para que el navegador pinte el estado inicial
+        // (opacidad 0 + translate) antes de disparar la transición.
+        requestAnimationFrame(function () {
+            setTimeout(function () {
+                document.getElementById('book-container').classList.add('book-open');
+            }, 60);
+        });
+    </script>
 
 </body>
+
 </html>
