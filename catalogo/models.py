@@ -265,6 +265,7 @@ class Orden(models.Model):
         default=Estado.PENDIENTE,
     )
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    costo_envio = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Costo de envío')
     notas = models.TextField(blank=True)
 
     # ── Dirección de entrega ─────────────────────────────────────
@@ -298,10 +299,14 @@ class Orden(models.Model):
     def __str__(self):
         cliente_str = self.cliente.username if self.cliente else self.email_cliente or 'Anónimo'
         return f'Orden #{self.pk} — {cliente_str}'
+        
+    @property
+    def subtotal(self):
+        return self.total - self.costo_envio
 
     def calcular_total(self):
-        """Recalcula el total sumando todos los ítems."""
-        self.total = sum(item.subtotal() for item in self.items.all())
+        """Recalcula el total sumando todos los ítems y el costo de envío."""
+        self.total = sum(item.subtotal() for item in self.items.all()) + self.costo_envio
         self.save(update_fields=['total'])
 
     @property

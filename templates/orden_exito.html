@@ -227,11 +227,17 @@ function copiarClabe() {
                 <div class="mt-6 pt-4 border-t border-neutral/80 space-y-2">
                     <div class="flex justify-between font-sans text-xs text-secondary/50">
                         <span>Subtotal</span>
-                        <span>${{ orden.total }}</span>
+                        <span>${{ orden.subtotal }}</span>
                     </div>
                     <div class="flex justify-between font-sans text-xs text-secondary/50">
                         <span>Envío (Mérida local)</span>
-                        <span class="text-xs italic">¡Gratis!</span>
+                        <span class="text-xs italic">
+                            {% if orden.costo_envio == 0 %}
+                                ¡Gratis!
+                            {% else %}
+                                ${{ orden.costo_envio }}
+                            {% endif %}
+                        </span>
                     </div>
                     <div class="flex justify-between items-baseline pt-2 border-t border-neutral">
                         <span class="font-serif text-base font-bold text-primary">Total Pagado</span>

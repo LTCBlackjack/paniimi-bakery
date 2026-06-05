@@ -82,7 +82,9 @@
                                     <!-- Desglose de Envío y Total -->
                                     <tr>
                                         <td colspan="2" align="right" style="padding: 15px 0 5px 0; color: #7F7F7F;">Envío (Mérida Local):</td>
-                                        <td align="right" style="padding: 15px 0 5px 0; font-weight: bold; color: #2E7D32;">Gratis</td>
+                                        <td align="right" style="padding: 15px 0 5px 0; font-weight: bold; color: {% if orden.costo_envio == 0 %}#2E7D32{% else %}#000000{% endif %};">
+                                            {% if orden.costo_envio == 0 %}Gratis{% else %}${{ orden.costo_envio }} MXN{% endif %}
+                                        </td>
                                     </tr>
                                     <tr style="border-top: 1px solid #000000;">
                                         <td colspan="2" align="right" style="padding: 15px 0; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #000000;">Total Pagado:</td>

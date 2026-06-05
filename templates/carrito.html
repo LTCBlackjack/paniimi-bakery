@@ -316,12 +316,18 @@
                                 Subtotal ({{ items|length }} {% if items|length == 1 %}producto{% else %}productos{% endif %})
                             </span>
                             <span class="font-sans text-sm font-semibold text-primary">
-                                ${{ total }}
+                                ${{ subtotal_productos }}
                             </span>
                         </div>
                         <div class="flex justify-between">
                             <span class="font-sans text-sm text-secondary">Envío</span>
-                            <span class="font-sans text-xs text-secondary/50 italic">Por confirmar</span>
+                            <span class="font-sans text-xs text-secondary/50 italic">
+                                {% if costo_envio == 0 %}
+                                    <span class="text-green-600 font-semibold">Gratis</span>
+                                {% else %}
+                                    ${{ costo_envio }}
+                                {% endif %}
+                            </span>
                         </div>
                     </div>
 
@@ -557,16 +563,6 @@
                         <div>
                             <span class="text-sm font-bold text-primary block">Transferencia Interbancaria (SPEI)</span>
                             <span class="text-xs text-secondary/60 leading-relaxed block">Realiza tu transferencia SPEI. Te daremos los datos bancarios y podrás enviar tu comprobante por WhatsApp al terminar.</span>
-                        </div>
-                    </label>
-
-                    <!-- Opción 2: Pago Contra Entrega -->
-                    <label class="flex items-start gap-3 p-3 border border-zinc-200 hover:border-primary rounded-editorial-sm cursor-pointer transition-colors group">
-                        <input type="radio" name="metodo_pago" value="cash"
-                               class="mt-1 w-4 h-4 text-primary focus:ring-primary border-gray-300">
-                        <div>
-                            <span class="text-sm font-bold text-primary block">Pago contra entrega</span>
-                            <span class="text-xs text-secondary/60 leading-relaxed block">Paga en efectivo o con tarjeta al recibir tus roles y galletas calientitas en tu puerta.</span>
                         </div>
                     </label>
                 </div>

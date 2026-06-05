@@ -231,6 +231,11 @@ def ver_carrito(request):
         except (InvalidOperation, KeyError, ValueError):
             continue  # omite entradas corruptas
 
+    costo_envio = Decimal('0.00')
+    if total > 0 and total < Decimal('300.00'):
+        costo_envio = Decimal('50.00')
+    total_pagar = total + costo_envio
+
     form_direccion = DireccionEntregaForm()
     
     # Obtener direcciones guardadas de PostgreSQL
@@ -241,7 +246,9 @@ def ver_carrito(request):
 
     return render(request, 'carrito.html', {
         'items':            items,
-        'total':            total,
+        'subtotal_productos': total,
+        'costo_envio':      costo_envio,
+        'total':            total_pagar,
         'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
         'form_direccion':   form_direccion,
         'direcciones_guardadas': direcciones_guardadas,
@@ -410,7 +417,7 @@ def crear_orden_checkout(request):
     direccion_data = data.get('direccion', {})
 
     # Validar que el método de pago sea permitido
-    if metodo_pago not in ['spei', 'cash']:
+    if metodo_pago not in ['spei']:
         return JsonResponse({'ok': False, 'error': 'Método de pago no soportado.'}, status=400)
 
     # ── Validar dirección ────────────────────────────────────────
@@ -444,12 +451,20 @@ def crear_orden_checkout(request):
     if not items_carrito or total <= 0:
         return JsonResponse({'ok': False, 'error': 'Carrito inválido.'}, status=400)
 
+    # Calcular costo de envío
+    costo_envio = Decimal('0.00')
+    if total < Decimal('300.00'):
+        costo_envio = Decimal('50.00')
+    
+    total_pagar = total + costo_envio
+
     # ── Crear Orden en PostgreSQL ─────────────────────────────────
     cd = form.cleaned_data
     orden = Orden.objects.create(
         cliente                  = request.user,
         email_cliente            = request.user.email,
-        total                    = total,
+        total                    = total_pagar,
+        costo_envio              = costo_envio,
         stripe_payment_intent_id = "",
         metodo_pago              = metodo_pago,
         # Dirección
