@@ -6,20 +6,16 @@
 
 {% block extra_head %}
 <style>
-    /* ── Masonry CSS puro — columnas editoriales ── */
-    .masonry-grid {
-        columns: 2;
-        column-gap: 2rem;
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 2.5rem 2rem;
     }
     @media (min-width: 768px) {
-        .masonry-grid { columns: 3; }
+        .product-grid { grid-template-columns: repeat(3, 1fr); }
     }
     @media (min-width: 1280px) {
-        .masonry-grid { columns: 4; }
-    }
-    .masonry-item {
-        break-inside: avoid;
-        margin-bottom: 2.5rem;
+        .product-grid { grid-template-columns: repeat(4, 1fr); }
     }
     /* Limitar descripción a 2 líneas */
     .line-clamp-2 {
@@ -83,11 +79,11 @@
     <div class="max-w-7xl mx-auto px-container pt-12">
 
         {% if productos %}
-        <div class="masonry-grid">
+        <div class="product-grid">
             {% for producto in productos %}
 
             <!-- ── ÍTEM MASONRY — sin card, producto flotante ── -->
-            <article class="masonry-item group {% if not producto.disponible %}opacity-80{% endif %}">
+            <article class="group {% if not producto.disponible %}opacity-80{% endif %}">
 
                 <!-- Imagen — sin contenedor cuadrado, altura natural -->
                 <div class="relative overflow-hidden mb-4" style="aspect-ratio: 1 / 1;">
