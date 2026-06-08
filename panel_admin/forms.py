@@ -232,21 +232,24 @@ class CategoriaForm(forms.ModelForm):
 
     class Meta:
         model = Categoria
-        fields = ['nombre', 'descripcion', 'activa', 'orden']
+        fields = ['nombre', 'descripcion', 'genero', 'activa', 'orden']
         labels = {
             'nombre': 'Nombre de la categoría',
             'descripcion': 'Descripción',
+            'genero': 'Género gramatical',
             'activa': 'Categoría activa',
             'orden': 'Orden de aparición (número)',
         }
         help_texts = {
             'activa': 'Las categorías inactivas se ocultan en el catálogo de cara al cliente.',
             'orden': 'Determina el orden en que se listará en el catálogo (ej. 1, 2, 3...).',
+            'genero': 'Femenino → “Nuestras Galletas” &nbsp;|&nbsp; Masculino → “Nuestros Roles”',
         }
         widgets = {
             'nombre': forms.TextInput(),
             'descripcion': forms.Textarea(attrs={'rows': 2}),
             'orden': forms.NumberInput(attrs={'min': '0'}),
+            'genero': forms.Select(),
         }
 
     def clean_nombre(self):

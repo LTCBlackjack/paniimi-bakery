@@ -17,6 +17,18 @@ class Categoria(models.Model):
     descripcion = models.TextField(blank=True)
     activa = models.BooleanField(default=True)
     orden = models.PositiveIntegerField(default=0, help_text='Orden de aparición en el catálogo')
+    GENERO_CHOICES = [
+        ('nuestras', 'Nuestras — (ej. Nuestras Galletas)'),
+        ('nuestros', 'Nuestros — (ej. Nuestros Roles)'),
+        ('nuestra',  'Nuestra — (ej. Nuestra Colección)'),
+        ('nuestro',  'Nuestro — (ej. Nuestro Pan Artesanal)'),
+    ]
+    genero = models.CharField(
+        max_length=10,
+        choices=GENERO_CHOICES,
+        default='nuestras',
+        help_text='Artículo que precede al nombre en el catálogo'
+    )
     creado = models.DateTimeField(auto_now_add=True)
     actualizado = models.DateTimeField(auto_now=True)
 

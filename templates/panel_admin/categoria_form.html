@@ -101,6 +101,22 @@
                     {% endif %}
                 </div>
 
+                <!-- Género gramatical -->
+                <div>
+                    <label for="{{ form.genero.id_for_label }}"
+                           class="block text-xs font-semibold uppercase tracking-widest text-accent-muted mb-1.5">
+                        Género gramatical
+                    </label>
+                    {{ form.genero }}
+                    <p class="mt-1 text-xs text-accent-muted">
+                        Elige el artículo que aparecerá antes del nombre en el catálogo.<br>
+                        Ej: <em>Nuestras</em> Galletas · <em>Nuestros</em> Roles · <em>Nuestra</em> Colección · <em>Nuestro</em> Pan Artesanal
+                    </p>
+                    {% if form.genero.errors %}
+                    <p class="mt-1 text-xs text-red-600">{{ form.genero.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
                 <!-- Orden -->
                 <div>
                     <label for="{{ form.orden.id_for_label }}"
