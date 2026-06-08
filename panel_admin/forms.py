@@ -283,18 +283,24 @@ class CuponForm(forms.ModelForm):
 
     def save(self, commit=True):
         """Convierte las fechas ingresadas (hora local México) a UTC antes de guardar."""
-        import pytz
-        from django.utils import timezone as tz
+        try:
+            from zoneinfo import ZoneInfo  # Python 3.9+ nativo
+        except ImportError:
+            import pytz
+            ZoneInfo = lambda tz: pytz.timezone(tz)
 
-        mexico = pytz.timezone('America/Mexico_City')
+        from django.utils import timezone as tz
+        import datetime
+
+        mexico = ZoneInfo('America/Mexico_City')
         instance = super().save(commit=False)
 
         # Si la fecha viene sin zona horaria (naive), le asignamos Mexico City
         if instance.valido_desde and tz.is_naive(instance.valido_desde):
-            instance.valido_desde = mexico.localize(instance.valido_desde)
+            instance.valido_desde = instance.valido_desde.replace(tzinfo=mexico)
 
         if instance.valido_hasta and tz.is_naive(instance.valido_hasta):
-            instance.valido_hasta = mexico.localize(instance.valido_hasta)
+            instance.valido_hasta = instance.valido_hasta.replace(tzinfo=mexico)
 
         if commit:
             instance.save()
