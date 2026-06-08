@@ -427,6 +427,141 @@
         })();
     </script>
 
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL DE INACTIVIDAD
+     Aparece tras 3 min de inactividad con cuenta regresiva de 30 s
+     ══════════════════════════════════════════════════════════ -->
+<div id="inactivity-modal"
+     style="display:none; position:fixed; inset:0; z-index:9999;
+            background:rgba(0,0,0,0.55); backdrop-filter:blur(4px);
+            align-items:center; justify-content:center;">
+    <div style="background:#fff; max-width:380px; width:90%; padding:2.5rem 2rem;
+                text-align:center; font-family:'Inter',sans-serif;
+                box-shadow:0 25px 60px rgba(0,0,0,0.2);">
+
+        <!-- Icono -->
+        <div style="width:56px;height:56px;border-radius:50%;background:#fafafa;
+                    border:1.5px solid #e4e4e7;display:flex;align-items:center;
+                    justify-content:center;margin:0 auto 1.25rem;">
+            <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="#18181b" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M12 6v6l4 2m6-2a10 10 0 11-20 0 10 10 0 0120 0z"/>
+            </svg>
+        </div>
+
+        <p style="font-size:0.65rem;font-weight:600;letter-spacing:0.2em;
+                  text-transform:uppercase;color:#71717a;margin-bottom:0.5rem;">
+            Panimii Bakery
+        </p>
+        <h2 style="font-family:'Playfair Display',serif;font-size:1.4rem;
+                   font-weight:400;color:#18181b;margin-bottom:0.75rem;">
+            ¿Sigues aquí?
+        </h2>
+        <p style="font-size:0.85rem;color:#52525b;line-height:1.6;margin-bottom:1.5rem;">
+            Por seguridad, tu sesión se cerrará en
+        </p>
+
+        <!-- Cuenta regresiva -->
+        <div id="inactivity-countdown"
+             style="font-size:3rem;font-family:'Playfair Display',serif;
+                    font-weight:700;color:#18181b;line-height:1;margin-bottom:1.75rem;">
+            30
+        </div>
+
+        <!-- Botón -->
+        <button onclick="resetInactivityTimer()"
+                style="width:100%;padding:0.75rem 1rem;background:#18181b;color:#fff;
+                       font-size:0.75rem;font-weight:600;letter-spacing:0.2em;
+                       text-transform:uppercase;border:none;cursor:pointer;
+                       transition:opacity 0.2s;"
+                onmouseover="this.style.opacity='0.8'"
+                onmouseout="this.style.opacity='1'">
+            Seguir aquí
+        </button>
+
+        {% if user.is_authenticated %}
+        <p style="margin-top:1rem;font-size:0.75rem;color:#a1a1aa;">
+            o <a href="{% url 'logout' %}" style="color:#18181b;text-decoration:underline;">
+                cerrar sesión ahora
+            </a>
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+(function () {
+    const INACTIVITY_MS  = 3 * 60 * 1000;  // 3 minutos
+    const COUNTDOWN_SECS = 30;              // aviso previo
+    const IS_AUTH = {{ user.is_authenticated|yesno:"true,false" }};
+    const LOGOUT_URL = "{% url 'logout' %}";
+    const HOME_URL   = "/";
+
+    const modal     = document.getElementById('inactivity-modal');
+    const countEl   = document.getElementById('inactivity-countdown');
+    let inactiveTimer, countdownInterval;
+
+    function showModal() {
+        let secs = COUNTDOWN_SECS;
+        countEl.textContent = secs;
+        modal.style.display = 'flex';
+
+        countdownInterval = setInterval(function () {
+            secs--;
+            countEl.textContent = secs;
+            if (secs <= 0) {
+                clearInterval(countdownInterval);
+                expireSession();
+            }
+        }, 1000);
+    }
+
+    function expireSession() {
+        modal.style.display = 'none';
+        if (IS_AUTH) {
+            // POST al logout para cerrar sesión correctamente
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = LOGOUT_URL;
+            const csrf = document.createElement('input');
+            csrf.type  = 'hidden';
+            csrf.name  = 'csrfmiddlewaretoken';
+            csrf.value = '{{ csrf_token }}';
+            form.appendChild(csrf);
+            document.body.appendChild(form);
+            form.submit();
+        } else {
+            window.location.href = HOME_URL;
+        }
+    }
+
+    window.resetInactivityTimer = function () {
+        clearInterval(countdownInterval);
+        modal.style.display = 'none';
+        startTimer();
+    };
+
+    function startTimer() {
+        clearTimeout(inactiveTimer);
+        inactiveTimer = setTimeout(showModal, INACTIVITY_MS);
+    }
+
+    // Escuchar cualquier señal de actividad
+    ['mousemove', 'keydown', 'scroll', 'touchstart', 'click'].forEach(function (evt) {
+        document.addEventListener(evt, function () {
+            // Solo reiniciar si el modal no está visible
+            if (modal.style.display === 'none' || modal.style.display === '') {
+                startTimer();
+            }
+        }, { passive: true });
+    });
+
+    // Arrancar el temporizador al cargar la página
+    startTimer();
+})();
+</script>
+
 </body>
 
 </html>
