@@ -263,3 +263,17 @@ class CategoriaForm(forms.ModelForm):
         return nombre
 
 
+from catalogo.models import Cupon
+
+class CuponForm(forms.ModelForm):
+    class Meta:
+        model = Cupon
+        fields = [
+            'codigo', 'tipo_descuento', 'valor', 'compra_minima',
+            'valido_desde', 'valido_hasta', 'limite_usos',
+            'usuario_asignado', 'activo'
+        ]
+        widgets = {
+            'valido_desde': forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'type': 'datetime-local'}),
+            'valido_hasta': forms.DateTimeInput(format='%Y-%m-%dT%H:%M', attrs={'type': 'datetime-local'}),
+        }

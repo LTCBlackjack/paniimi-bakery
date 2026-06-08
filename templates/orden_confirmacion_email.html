@@ -86,6 +86,14 @@
                                             {% if orden.costo_envio == 0 %}Gratis{% else %}${{ orden.costo_envio }} MXN{% endif %}
                                         </td>
                                     </tr>
+                                    {% if orden.descuento_aplicado > 0 %}
+                                    <tr>
+                                        <td colspan="2" align="right" style="padding: 5px 0; color: #2E7D32;">Descuento {% if orden.cupon %}({{ orden.cupon.codigo }}){% endif %}:</td>
+                                        <td align="right" style="padding: 5px 0; font-weight: bold; color: #2E7D32;">
+                                            -${{ orden.descuento_aplicado }} MXN
+                                        </td>
+                                    </tr>
+                                    {% endif %}
                                     <tr style="border-top: 1px solid #000000;">
                                         <td colspan="2" align="right" style="padding: 15px 0; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #000000;">Total Pagado:</td>
                                         <td align="right" style="padding: 15px 0; font-weight: bold; font-size: 16px; color: #000000;">

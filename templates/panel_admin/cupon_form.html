@@ -1,0 +1,233 @@
+{% extends "panel_admin/admin_base.html" %}
+
+{% block title %}{{ accion }} Cupón | Panel de Administración{% endblock %}
+
+{% block extra_head %}
+<link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.default.min.css" rel="stylesheet">
+<style>
+    .ts-wrapper .ts-control {
+        @apply w-full px-4 py-2 border border-neutral rounded-lg bg-white text-sm shadow-none;
+        min-height: 42px; /* Alineado a input type text */
+    }
+    .ts-wrapper.focus .ts-control {
+        @apply border-primary ring-1 ring-primary/20 shadow-none outline-none;
+    }
+    .ts-wrapper .ts-dropdown {
+        @apply rounded-lg border border-neutral shadow-lg text-sm bg-white overflow-hidden;
+    }
+    .ts-dropdown .active {
+        @apply bg-neutral/10 text-primary;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <a href="{% url 'panel_admin:lista_cupones' %}" class="inline-flex items-center text-sm text-secondary hover:text-primary mb-4 transition-colors">
+        <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver a Cupones
+    </a>
+    <h1 class="text-2xl font-bold text-primary">{{ accion }} Cupón</h1>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-neutral/50 p-6 max-w-3xl">
+    <form method="post" class="space-y-6" novalidate>
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+        <div class="bg-red-50 text-red-600 p-4 rounded-lg text-sm mb-6">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Código -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1">{{ form.codigo.label }}</label>
+                {{ form.codigo }}
+                {% if form.codigo.errors %}<p class="text-red-500 text-xs mt-1">{{ form.codigo.errors.0 }}</p>{% endif %}
+                <p class="text-xs text-secondary/60 mt-1">Ej. VERANO20, ENVIOFREE</p>
+            </div>
+            
+            <!-- Tipo Descuento -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1">{{ form.tipo_descuento.label }}</label>
+                {{ form.tipo_descuento }}
+                {% if form.tipo_descuento.errors %}<p class="text-red-500 text-xs mt-1">{{ form.tipo_descuento.errors.0 }}</p>{% endif %}
+            </div>
+            
+            <!-- Valor -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1">{{ form.valor.label }}</label>
+                {{ form.valor }}
+                {% if form.valor.errors %}<p class="text-red-500 text-xs mt-1">{{ form.valor.errors.0 }}</p>{% endif %}
+                <p class="text-xs text-secondary/60 mt-1">{{ form.valor.help_text }}</p>
+            </div>
+
+            <!-- Compra Mínima -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1">{{ form.compra_minima.label }}</label>
+                {{ form.compra_minima }}
+                {% if form.compra_minima.errors %}<p class="text-red-500 text-xs mt-1">{{ form.compra_minima.errors.0 }}</p>{% endif %}
+                <p class="text-xs text-secondary/60 mt-1">{{ form.compra_minima.help_text }}</p>
+            </div>
+
+            <!-- Válido Desde -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1">{{ form.valido_desde.label }}</label>
+                {{ form.valido_desde }}
+                {% if form.valido_desde.errors %}<p class="text-red-500 text-xs mt-1">{{ form.valido_desde.errors.0 }}</p>{% endif %}
+            </div>
+
+            <!-- Válido Hasta -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1">{{ form.valido_hasta.label }}</label>
+                {{ form.valido_hasta }}
+                {% if form.valido_hasta.errors %}<p class="text-red-500 text-xs mt-1">{{ form.valido_hasta.errors.0 }}</p>{% endif %}
+            </div>
+
+            <!-- Límite de Usos -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1">{{ form.limite_usos.label }}</label>
+                {{ form.limite_usos }}
+                {% if form.limite_usos.errors %}<p class="text-red-500 text-xs mt-1">{{ form.limite_usos.errors.0 }}</p>{% endif %}
+                <p class="text-xs text-secondary/60 mt-1" id="limite-usos-help">{{ form.limite_usos.help_text }}</p>
+            </div>
+
+            <!-- Usuario Asignado -->
+            <div>
+                <label class="block text-sm font-medium text-primary mb-1">{{ form.usuario_asignado.label }}</label>
+                {{ form.usuario_asignado }}
+                {% if form.usuario_asignado.errors %}<p class="text-red-500 text-xs mt-1">{{ form.usuario_asignado.errors.0 }}</p>{% endif %}
+                <p class="text-xs text-secondary/60 mt-1">{{ form.usuario_asignado.help_text }}</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+            {{ form.activo }}
+            <label class="text-sm font-medium text-primary">{{ form.activo.label }} (Activar/Desactivar)</label>
+        </div>
+
+        <div class="pt-6 flex justify-end gap-4 border-t border-neutral/50">
+            <a href="{% url 'panel_admin:lista_cupones' %}" class="px-5 py-2.5 rounded-lg border border-neutral text-primary hover:bg-neutral/30 transition-colors font-medium">
+                Cancelar
+            </a>
+            <button type="submit" class="bg-primary text-white px-6 py-2.5 rounded-lg hover:bg-primary/90 transition-colors font-medium shadow-sm">
+                Guardar Cupón
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if accion == 'Editar' %}
+<div class="bg-white rounded-xl shadow-sm border border-neutral/50 overflow-hidden mt-8 max-w-3xl">
+    <div class="px-6 py-4 border-b border-neutral/50 bg-neutral/10">
+        <h2 class="text-lg font-bold text-primary">Historial de Uso</h2>
+        <p class="text-sm text-secondary">Órdenes que han aplicado este cupón.</p>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-neutral/30 text-secondary">
+                <tr>
+                    <th class="px-6 py-3 font-semibold text-xs uppercase tracking-wide">Orden</th>
+                    <th class="px-6 py-3 font-semibold text-xs uppercase tracking-wide">Cliente/Email</th>
+                    <th class="px-6 py-3 font-semibold text-xs uppercase tracking-wide">Fecha</th>
+                    <th class="px-6 py-3 font-semibold text-xs uppercase tracking-wide">Descuento</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral/50">
+                {% for orden in historial_usos %}
+                <tr class="hover:bg-neutral/10 transition-colors">
+                    <td class="px-6 py-3 font-medium text-primary">
+                        <a href="{% url 'panel_admin:detalle_pedido' orden.pk %}" class="text-blue-600 hover:underline">#{{ orden.pk }}</a>
+                    </td>
+                    <td class="px-6 py-3 text-secondary">
+                        {{ orden.cliente.get_full_name|default:orden.email_cliente }}
+                    </td>
+                    <td class="px-6 py-3 text-secondary">
+                        {{ orden.creado|date:"d M, Y H:i" }}
+                    </td>
+                    <td class="px-6 py-3 text-green-600 font-medium">
+                        -${{ orden.descuento_aplicado|floatformat:2 }}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-6 py-8 text-center text-secondary/60">
+                        Nadie ha utilizado este cupón todavía.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Estilos básicos para el formulario por si no usa crispy forms -->
+<style>
+    form input[type="text"],
+    form input[type="number"],
+    form input[type="datetime-local"],
+    form select {
+        @apply w-full px-4 py-2 border border-neutral rounded-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 bg-white;
+    }
+    
+    /* Mostrar bordes rojos para campos con error */
+    .has-error input, .has-error select {
+        @apply border-red-500;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const usuarioSelect = document.getElementById('id_usuario_asignado');
+        const limiteInput = document.getElementById('id_limite_usos');
+        const limiteHelp = document.getElementById('limite-usos-help');
+        const form = document.querySelector('form');
+
+        // Inicializar Tom Select para búsqueda de usuarios
+        if (usuarioSelect) {
+            new TomSelect(usuarioSelect, {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                },
+                placeholder: "Buscar y seleccionar un usuario...",
+                allowEmptyOption: true,
+            });
+        }
+
+        function toggleLimiteUsos() {
+            if (usuarioSelect && limiteInput) {
+                if (usuarioSelect.value) {
+                    limiteInput.value = 1;
+                    limiteInput.disabled = true;
+                    limiteHelp.textContent = 'Al asignar a un usuario, el límite de usos se fija en 1 automáticamente.';
+                } else {
+                    limiteInput.disabled = false;
+                    limiteHelp.textContent = '0 significa sin límite';
+                }
+            }
+        }
+
+        if (usuarioSelect) {
+            usuarioSelect.addEventListener('change', toggleLimiteUsos);
+            toggleLimiteUsos(); // Ejecutar al cargar
+        }
+        
+        // Antes de enviar el form, habilitar el campo para que se envíe el valor
+        if (form && limiteInput) {
+            form.addEventListener('submit', function() {
+                limiteInput.disabled = false;
+            });
+        }
+    });
+</script>
+{% endblock %}

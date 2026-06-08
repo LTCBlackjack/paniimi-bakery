@@ -239,6 +239,12 @@ function copiarClabe() {
                             {% endif %}
                         </span>
                     </div>
+                    {% if orden.descuento_aplicado > 0 %}
+                    <div class="flex justify-between font-sans text-xs text-green-600">
+                        <span>Descuento {% if orden.cupon %}({{ orden.cupon.codigo }}){% endif %}</span>
+                        <span>-${{ orden.descuento_aplicado }}</span>
+                    </div>
+                    {% endif %}
                     <div class="flex justify-between items-baseline pt-2 border-t border-neutral">
                         <span class="font-serif text-base font-bold text-primary">Total Pagado</span>
                         <span class="font-sans text-xl font-bold text-primary">${{ orden.total }}</span>

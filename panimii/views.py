@@ -231,10 +231,43 @@ def ver_carrito(request):
         except (InvalidOperation, KeyError, ValueError):
             continue  # omite entradas corruptas
 
+    cupon_codigo = request.session.get('cupon_codigo')
+    descuento_aplicado = Decimal('0.00')
+    cupon_obj = None
+    mensaje_cupon = None
+    
+    if cupon_codigo:
+        from catalogo.models import Cupon
+        try:
+            cupon_obj = Cupon.objects.get(codigo=cupon_codigo)
+            valido, msg = cupon_obj.is_valid(request.user if request.user.is_authenticated else None, total)
+            if not valido:
+                mensaje_cupon = msg
+                del request.session['cupon_codigo']
+                cupon_obj = None
+        except Cupon.DoesNotExist:
+            del request.session['cupon_codigo']
+            cupon_obj = None
+
     costo_envio = Decimal('0.00')
     if total > 0 and total < Decimal('300.00'):
         costo_envio = Decimal('50.00')
-    total_pagar = total + costo_envio
+        
+    if cupon_obj and cupon_obj.tipo_descuento == 'envio_gratis':
+        descuento_aplicado = costo_envio
+
+    total_con_envio = total + costo_envio
+    
+    if cupon_obj:
+        if cupon_obj.tipo_descuento == 'porcentaje':
+            descuento_aplicado = (total_con_envio * (cupon_obj.valor / Decimal('100.00'))).quantize(Decimal('0.01'))
+        elif cupon_obj.tipo_descuento == 'monto':
+            descuento_aplicado = cupon_obj.valor
+            
+    if descuento_aplicado > total_con_envio:
+        descuento_aplicado = total_con_envio
+        
+    total_pagar = total_con_envio - descuento_aplicado
 
     form_direccion = DireccionEntregaForm()
     
@@ -248,6 +281,9 @@ def ver_carrito(request):
         'items':            items,
         'subtotal_productos': total,
         'costo_envio':      costo_envio,
+        'descuento_aplicado': descuento_aplicado,
+        'cupon':            cupon_obj,
+        'mensaje_cupon':    mensaje_cupon,
         'total':            total_pagar,
         'stripe_public_key': settings.STRIPE_PUBLIC_KEY,
         'form_direccion':   form_direccion,
@@ -451,12 +487,40 @@ def crear_orden_checkout(request):
     if not items_carrito or total <= 0:
         return JsonResponse({'ok': False, 'error': 'Carrito inválido.'}, status=400)
 
-    # Calcular costo de envío
+    # Calcular costo de envío y descuentos
+    cupon_codigo = request.session.get('cupon_codigo')
+    descuento_aplicado = Decimal('0.00')
+    cupon_obj = None
+    
+    if cupon_codigo:
+        from catalogo.models import Cupon
+        try:
+            cupon_obj = Cupon.objects.get(codigo=cupon_codigo)
+            valido, msg = cupon_obj.is_valid(request.user if request.user.is_authenticated else None, total)
+            if not valido:
+                return JsonResponse({'ok': False, 'error': f'Cupón inválido: {msg}'}, status=400)
+        except Cupon.DoesNotExist:
+            cupon_obj = None
+
     costo_envio = Decimal('0.00')
     if total < Decimal('300.00'):
         costo_envio = Decimal('50.00')
+        
+    if cupon_obj and cupon_obj.tipo_descuento == 'envio_gratis':
+        descuento_aplicado = costo_envio
+
+    total_con_envio = total + costo_envio
     
-    total_pagar = total + costo_envio
+    if cupon_obj:
+        if cupon_obj.tipo_descuento == 'porcentaje':
+            descuento_aplicado = (total_con_envio * (cupon_obj.valor / Decimal('100.00'))).quantize(Decimal('0.01'))
+        elif cupon_obj.tipo_descuento == 'monto':
+            descuento_aplicado = cupon_obj.valor
+            
+    if descuento_aplicado > total_con_envio:
+        descuento_aplicado = total_con_envio
+        
+    total_pagar = total_con_envio - descuento_aplicado
 
     # ── Crear Orden en PostgreSQL ─────────────────────────────────
     cd = form.cleaned_data
@@ -465,6 +529,8 @@ def crear_orden_checkout(request):
         email_cliente            = request.user.email,
         total                    = total_pagar,
         costo_envio              = costo_envio,
+        cupon                    = cupon_obj,
+        descuento_aplicado       = descuento_aplicado,
         stripe_payment_intent_id = "",
         metodo_pago              = metodo_pago,
         # Dirección
@@ -522,9 +588,15 @@ def crear_orden_checkout(request):
             tamano          = item.get('tamano', ''),
         )
 
-    # ── Vaciar el carrito ─────────────────────────────────────────
+    # ── Vaciar el carrito y cupón ─────────────────────────────────────────
     request.session['carrito'] = {}
+    if 'cupon_codigo' in request.session:
+        del request.session['cupon_codigo']
     request.session.modified   = True
+    
+    if cupon_obj:
+        cupon_obj.usos_actuales += 1
+        cupon_obj.save(update_fields=['usos_actuales'])
 
     # Enviar correo de confirmación de pedido recibido
     enviar_correo_confirmacion_pedido(orden, request)
@@ -532,7 +604,40 @@ def crear_orden_checkout(request):
     return JsonResponse({'ok': True, 'orden_id': orden.pk})
 
 
-
+@require_POST
+def aplicar_cupon(request):
+    import json
+    from django.http import JsonResponse
+    from catalogo.models import Cupon
+    from decimal import Decimal
+    
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'ok': False, 'error': 'Datos inválidos.'}, status=400)
+    
+    codigo = data.get('codigo', '').strip()
+    if not codigo:
+        if 'cupon_codigo' in request.session:
+            del request.session['cupon_codigo']
+            request.session.modified = True
+        return JsonResponse({'ok': True, 'mensaje': 'Cupón removido.'})
+        
+    try:
+        cupon = Cupon.objects.get(codigo=codigo)
+        
+        carrito_session = request.session.get('carrito', {})
+        subtotal = sum(Decimal(str(d['precio'])) * int(d['cantidad']) for d in carrito_session.values() if 'precio' in d and 'cantidad' in d)
+        
+        valido, msg = cupon.is_valid(request.user if request.user.is_authenticated else None, subtotal)
+        if valido:
+            request.session['cupon_codigo'] = codigo
+            request.session.modified = True
+            return JsonResponse({'ok': True, 'mensaje': 'Cupón aplicado con éxito.'})
+        else:
+            return JsonResponse({'ok': False, 'error': msg}, status=400)
+    except Cupon.DoesNotExist:
+        return JsonResponse({'ok': False, 'error': 'Cupón no encontrado o inválido.'}, status=404)
 @login_required
 def dashboard(request):
     """

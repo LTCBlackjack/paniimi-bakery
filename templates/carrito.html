@@ -329,6 +329,28 @@
                                 {% endif %}
                             </span>
                         </div>
+                        {% if descuento_aplicado > 0 %}
+                        <div class="flex justify-between text-green-600">
+                            <span class="font-sans text-sm font-semibold">Descuento ({% if cupon.tipo_descuento == 'porcentaje' %}{{ cupon.valor|floatformat:0 }}%{% else %}{{ cupon.codigo }}{% endif %})</span>
+                            <span class="font-sans text-sm font-semibold">-${{ descuento_aplicado }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Input de Cupón -->
+                    <div class="mb-5">
+                        <form id="cupon-form" class="flex gap-2">
+                            <input type="text" id="cupon-codigo" placeholder="Código de descuento" 
+                                   value="{{ cupon.codigo|default:'' }}"
+                                   class="flex-1 px-3 py-2 text-sm border border-neutral focus:outline-none focus:border-primary bg-transparent text-primary placeholder:text-secondary/50 uppercase" 
+                                   {% if cupon %}readonly{% endif %}>
+                            {% if cupon %}
+                            <button type="button" id="btn-quitar-cupon" class="px-4 py-2 bg-red-50 text-red-600 font-sans text-xs font-bold tracking-widest uppercase hover:bg-red-100 transition-colors">Quitar</button>
+                            {% else %}
+                            <button type="submit" id="btn-aplicar-cupon" class="px-4 py-2 bg-neutral text-primary font-sans text-xs font-bold tracking-widest uppercase hover:bg-zinc-200 transition-colors">Aplicar</button>
+                            {% endif %}
+                        </form>
+                        <p id="cupon-mensaje" class="text-xs mt-2 {% if mensaje_cupon %}text-red-500{% else %}hidden{% endif %}">{{ mensaje_cupon }}</p>
                     </div>
 
                     <!-- Divisor -->
@@ -616,7 +638,82 @@
     'use strict';
 
     const CHECKOUT_URL = '{% url "crear_orden_checkout" %}';
+    const CUPON_URL    = '{% url "aplicar_cupon" %}';
     const CSRF_TOKEN   = '{{ csrf_token }}';
+
+    // ── Cupones ──────────────────────────────────────────────────
+    const btnAplicar = document.getElementById('btn-aplicar-cupon');
+    const btnQuitar = document.getElementById('btn-quitar-cupon');
+    const formCupon = document.getElementById('cupon-form');
+
+    if (formCupon) {
+        formCupon.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const codigo = document.getElementById('cupon-codigo').value;
+            if (!codigo) return;
+            
+            const btn = document.getElementById('btn-aplicar-cupon');
+            if(btn) {
+                btn.disabled = true;
+                btn.textContent = '...';
+            }
+
+            try {
+                const res = await fetch(CUPON_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': CSRF_TOKEN
+                    },
+                    body: JSON.stringify({ codigo })
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    window.location.reload();
+                } else {
+                    const msgEl = document.getElementById('cupon-mensaje');
+                    msgEl.textContent = data.error || 'Error al aplicar cupón';
+                    msgEl.classList.remove('hidden');
+                    msgEl.classList.add('text-red-500');
+                    if(btn){
+                        btn.disabled = false;
+                        btn.textContent = 'Aplicar';
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                if(btn){
+                    btn.disabled = false;
+                    btn.textContent = 'Aplicar';
+                }
+            }
+        });
+    }
+
+    if (btnQuitar) {
+        btnQuitar.addEventListener('click', async () => {
+            btnQuitar.disabled = true;
+            btnQuitar.textContent = '...';
+            try {
+                const res = await fetch(CUPON_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': CSRF_TOKEN
+                    },
+                    body: JSON.stringify({ codigo: '' }) // string vacío = quitar
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    window.location.reload();
+                }
+            } catch (err) {
+                console.error(err);
+                btnQuitar.disabled = false;
+                btnQuitar.textContent = 'Quitar';
+            }
+        });
+    }
 
     // ── Abrir / cerrar panel ─────────────────────────────────────
     window.openPaymentPanel = () => {

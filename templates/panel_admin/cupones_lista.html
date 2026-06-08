@@ -1,0 +1,130 @@
+{% extends "panel_admin/admin_base.html" %}
+
+{% block title %}Cupones | Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-8">
+    <div>
+        <h1 class="text-2xl font-bold text-primary">Cupones de Descuento</h1>
+        <p class="text-sm text-secondary mt-1">Gestiona los códigos de descuento de la tienda.</p>
+    </div>
+    
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full xl:w-auto">
+        <!-- Buscador -->
+        <form method="GET" class="flex items-center gap-2 flex-1 sm:w-80">
+            <div class="relative flex-1">
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+                </svg>
+                <input type="text" name="q" value="{{ busqueda }}" placeholder="Buscar cupón..." class="w-full pl-9 pr-4 py-2.5 text-sm border border-neutral rounded-lg focus:outline-none focus:border-primary transition-colors bg-white">
+            </div>
+            <button type="submit" class="bg-primary text-white px-4 py-2.5 rounded-lg text-sm hover:bg-primary/90 transition-colors font-medium">Buscar</button>
+            {% if busqueda %}
+            <a href="{% url 'panel_admin:lista_cupones' %}" class="text-secondary hover:text-primary transition-colors text-sm px-2">Limpiar</a>
+            {% endif %}
+        </form>
+
+        <a href="{% url 'panel_admin:crear_cupon' %}" class="inline-flex items-center justify-center gap-2 bg-primary text-white px-5 py-2.5 rounded-lg hover:bg-primary/90 transition-colors font-medium whitespace-nowrap w-full sm:w-auto">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nuevo Cupón
+        </a>
+    </div>
+</div>
+
+<div class="bg-admin-card border border-zinc-200 animate-fade-in-up" style="animation-delay:60ms">
+    <div class="overflow-x-auto">
+        <table class="admin-table w-full" style="table-layout: fixed;">
+            <colgroup>
+                <col style="width: 18%">
+                <col style="width: 12%">
+                <col style="width: 14%">
+                <col style="width: 14%">
+                <col style="width: 10%">
+                <col style="width: 12%">
+                <col style="width: 20%">
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th class="!text-center">Descuento</th>
+                    <th class="!text-center">Válido Hasta</th>
+                    <th class="!text-center">Asignado a</th>
+                    <th class="!text-center">Usos</th>
+                    <th class="!text-center">Estado</th>
+                    <th class="!text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cupon in cupones %}
+                <tr>
+                    <td>
+                        <span class="font-semibold text-primary text-sm">{{ cupon.codigo }}</span>
+                    </td>
+                    <td class="text-center text-accent-muted">
+                        {% if cupon.tipo_descuento == 'porcentaje' %}{{ cupon.valor|floatformat:0 }}%
+                        {% elif cupon.tipo_descuento == 'monto' %}${{ cupon.valor }}
+                        {% else %}Envío Gratis{% endif %}
+                    </td>
+                    <td class="text-center text-accent-muted">
+                        {{ cupon.valido_hasta|date:"d M, Y" }}
+                    </td>
+                    <td class="text-center text-accent-muted">
+                        {% if cupon.usuario_asignado %}
+                            <div class="flex items-center justify-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                <span>{{ cupon.usuario_asignado.username }}</span>
+                            </div>
+                        {% else %}
+                            <span class="opacity-40">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center text-accent-muted">
+                        {{ cupon.usos_actuales }} / {% if cupon.limite_usos > 0 %}{{ cupon.limite_usos }}{% else %}∞{% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if cupon.activo and cupon.valido_hasta > ahora and cupon.valido_desde <= ahora %}
+                            <span class="badge badge-entregada">Vigente</span>
+                        {% elif not cupon.activo %}
+                            <span class="badge badge-cancelada">Inactivo</span>
+                        {% else %}
+                            <span class="badge badge-pendiente">Caducado</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <a href="{% url 'panel_admin:editar_cupon' cupon.pk %}" title="Editar cupón" class="inline-flex items-center gap-1 btn-admin-outline px-3 py-1.5 text-xs">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                                Editar
+                            </a>
+                            <a href="{% url 'panel_admin:eliminar_cupon' cupon.pk %}" title="Eliminar cupón" class="inline-flex items-center gap-1 btn-admin-outline px-3 py-1.5 text-xs border-red-200 text-red-500 hover:border-red-500 hover:text-red-600">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                                Eliminar
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-12">
+                        <div class="flex flex-col items-center justify-center">
+                            <svg class="w-12 h-12 mb-4 text-zinc-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" />
+                            </svg>
+                            <p class="text-base text-accent-muted">No hay cupones creados todavía.</p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

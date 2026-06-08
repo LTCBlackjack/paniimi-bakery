@@ -26,6 +26,12 @@ urlpatterns = [
     path('clientes/<int:user_id>/editar/', views.editar_cliente,     name='editar_cliente'),
     path('clientes/<int:user_id>/eliminar/', views.eliminar_cliente, name='eliminar_cliente'),
 
+    # Cupones
+    path('cupones/', views.lista_cupones, name='lista_cupones'),
+    path('cupones/nuevo/', views.crear_cupon, name='crear_cupon'),
+    path('cupones/<int:pk>/editar/', views.editar_cupon, name='editar_cupon'),
+    path('cupones/<int:pk>/eliminar/', views.eliminar_cupon, name='eliminar_cupon'),
+
     # Estaciones
     path('estaciones/', views.estaciones, name='estaciones'),
 

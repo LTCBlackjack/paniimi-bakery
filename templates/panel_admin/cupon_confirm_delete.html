@@ -1,0 +1,45 @@
+{% extends "panel_admin/admin_base.html" %}
+
+{% block title %}Eliminar Cupón | Panel de Administración{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <a href="{% url 'panel_admin:lista_cupones' %}" class="inline-flex items-center text-sm text-secondary hover:text-primary mb-4 transition-colors">
+        <svg class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+        Volver a Cupones
+    </a>
+    <h1 class="text-2xl font-bold text-red-600">Eliminar Cupón</h1>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-red-200 p-6 max-w-2xl">
+    <div class="flex items-start gap-4">
+        <div class="flex-shrink-0 bg-red-100 p-3 rounded-full">
+            <svg class="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+        </div>
+        <div>
+            <h2 class="text-lg font-bold text-primary mb-2">¿Estás seguro que deseas eliminar el cupón "{{ cupon.codigo }}"?</h2>
+            <p class="text-secondary mb-4">Esta acción no se puede deshacer. Los usuarios ya no podrán usar este código de descuento.</p>
+            
+            <div class="bg-neutral/10 rounded-lg p-4 mb-6">
+                <p class="text-sm"><strong>Código:</strong> {{ cupon.codigo }}</p>
+                <p class="text-sm"><strong>Descuento:</strong> {% if cupon.tipo_descuento == 'porcentaje' %}{{ cupon.valor|floatformat:0 }}%{% elif cupon.tipo_descuento == 'monto' %}${{ cupon.valor }}{% else %}Envío Gratis{% endif %}</p>
+                <p class="text-sm"><strong>Usos hasta ahora:</strong> {{ cupon.usos_actuales }}</p>
+            </div>
+
+            <form method="POST" class="flex gap-4">
+                {% csrf_token %}
+                <a href="{% url 'panel_admin:lista_cupones' %}" class="px-5 py-2.5 rounded-lg border border-neutral text-primary hover:bg-neutral/30 transition-colors font-medium">
+                    Cancelar
+                </a>
+                <button type="submit" class="bg-red-600 text-white px-6 py-2.5 rounded-lg hover:bg-red-700 transition-colors font-medium shadow-sm">
+                    Sí, eliminar cupón
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

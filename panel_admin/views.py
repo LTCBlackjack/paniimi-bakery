@@ -442,6 +442,91 @@ def estaciones(request):
 
 
 @staff_member_required(login_url='/auth/login/')
+def lista_cupones(request):
+    from catalogo.models import Cupon
+    from django.utils import timezone
+    from django.db.models import Q
+    
+    busqueda = request.GET.get('q', '').strip()
+    cupones = Cupon.objects.all().order_by('-id')
+    
+    if busqueda:
+        cupones = cupones.filter(
+            Q(codigo__icontains=busqueda) |
+            Q(usuario_asignado__username__icontains=busqueda) |
+            Q(usuario_asignado__email__icontains=busqueda)
+        )
+    
+    ctx = {
+        'cupones': cupones,
+        'busqueda': busqueda,
+        'ahora': timezone.now(),
+        'seccion_activa': 'cupones',
+    }
+    return render(request, 'panel_admin/cupones_lista.html', ctx)
+
+@staff_member_required(login_url='/auth/login/')
+def eliminar_cupon(request, pk):
+    from django.shortcuts import redirect, get_object_or_404
+    from catalogo.models import Cupon
+    from django.contrib import messages
+    
+    cupon = get_object_or_404(Cupon, pk=pk)
+    if request.method == 'POST':
+        cupon.delete()
+        messages.success(request, "Cupón eliminado correctamente.")
+        return redirect('panel_admin:lista_cupones')
+        
+    return render(request, 'panel_admin/cupon_confirm_delete.html', {
+        'cupon': cupon, 'seccion_activa': 'cupones'
+    })
+
+@staff_member_required(login_url='/auth/login/')
+def crear_cupon(request):
+    from .forms import CuponForm
+    from django.shortcuts import redirect
+    from django.contrib import messages
+    if request.method == 'POST':
+        form = CuponForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Cupón creado exitosamente.")
+            return redirect('panel_admin:lista_cupones')
+    else:
+        form = CuponForm()
+        
+    return render(request, 'panel_admin/cupon_form.html', {
+        'form': form, 'seccion_activa': 'cupones', 'accion': 'Crear'
+    })
+
+@staff_member_required(login_url='/auth/login/')
+def editar_cupon(request, pk):
+    from .forms import CuponForm
+    from django.shortcuts import redirect, get_object_or_404
+    from catalogo.models import Cupon
+    from django.contrib import messages
+    
+    cupon = get_object_or_404(Cupon, pk=pk)
+    if request.method == 'POST':
+        form = CuponForm(request.POST, instance=cupon)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Cupón actualizado exitosamente.")
+            return redirect('panel_admin:lista_cupones')
+    else:
+        form = CuponForm(instance=cupon)
+        
+    historial_usos = cupon.ordenes.exclude(estado='cancelada').order_by('-creado')
+        
+    return render(request, 'panel_admin/cupon_form.html', {
+        'form': form, 
+        'seccion_activa': 'cupones', 
+        'accion': 'Editar',
+        'historial_usos': historial_usos
+    })
+
+
+@staff_member_required(login_url='/auth/login/')
 def verificar_llave(request):
     """
     Pantalla premium donde el administrador debe subir su archivo .key.

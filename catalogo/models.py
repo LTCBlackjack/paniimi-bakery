@@ -4,6 +4,7 @@ from io import BytesIO
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 from PIL import Image
 
@@ -237,6 +238,55 @@ class Producto(models.Model):
 
 
 # ════════════════════════════════════════════════════════════════════════
+# CUPONES
+# ════════════════════════════════════════════════════════════════════════
+
+class Cupon(models.Model):
+    class TipoDescuento(models.TextChoices):
+        PORCENTAJE = 'porcentaje', 'Porcentaje'
+        MONTO = 'monto', 'Monto Fijo'
+        ENVIO_GRATIS = 'envio_gratis', 'Envío Gratis'
+
+    codigo = models.CharField(max_length=50, unique=True, verbose_name='Código del Cupón')
+    tipo_descuento = models.CharField(max_length=20, choices=TipoDescuento.choices, default=TipoDescuento.PORCENTAJE)
+    valor = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Porcentaje (ej. 10 para 10%) o Monto (ej. 50 para $50)')
+    compra_minima = models.DecimalField(max_digits=10, decimal_places=2, default=0, help_text='Monto mínimo de compra (subtotal) para aplicar el cupón')
+    valido_desde = models.DateTimeField(default=timezone.now)
+    valido_hasta = models.DateTimeField()
+    activo = models.BooleanField(default=True)
+    limite_usos = models.IntegerField(default=0, help_text='0 significa sin límite')
+    usos_actuales = models.IntegerField(default=0)
+    usuario_asignado = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, help_text='Opcional. Limitar uso a este usuario.')
+
+    def is_valid(self, usuario=None, subtotal=0, email_cliente=None):
+        from django.utils import timezone
+        ahora = timezone.now()
+        if not self.activo:
+            return False, "El cupón no está activo."
+        if ahora < self.valido_desde or ahora > self.valido_hasta:
+            return False, "El cupón está caducado o aún no es válido."
+        if self.limite_usos > 0 and self.usos_actuales >= self.limite_usos:
+            return False, "El cupón ha superado su límite de usos."
+        if self.usuario_asignado and self.usuario_asignado != usuario:
+            return False, "Este cupón no está asignado a tu cuenta."
+        if self.compra_minima > 0 and subtotal < self.compra_minima:
+            return False, f"El cupón requiere una compra mínima de ${self.compra_minima} MXN."
+            
+        # Verificar que el usuario o correo no haya usado ya el cupón
+        if usuario and usuario.is_authenticated:
+            if self.ordenes.filter(cliente=usuario).exclude(estado='cancelada').exists():
+                return False, "Ya has utilizado este cupón en una compra anterior."
+        elif email_cliente:
+            if self.ordenes.filter(email_cliente__iexact=email_cliente).exclude(estado='cancelada').exists():
+                return False, "Este correo electrónico ya fue utilizado con este cupón."
+                
+        return True, ""
+
+    def __str__(self):
+        return f"{self.codigo} - {self.get_tipo_descuento_display()}"
+
+
+# ════════════════════════════════════════════════════════════════════════
 # ÓRDENES DE COMPRA
 # ════════════════════════════════════════════════════════════════════════
 
@@ -266,6 +316,8 @@ class Orden(models.Model):
     )
     total = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     costo_envio = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Costo de envío')
+    cupon = models.ForeignKey(Cupon, on_delete=models.SET_NULL, null=True, blank=True, related_name='ordenes')
+    descuento_aplicado = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name='Descuento aplicado')
     notas = models.TextField(blank=True)
 
     # ── Dirección de entrega ─────────────────────────────────────
@@ -302,11 +354,13 @@ class Orden(models.Model):
         
     @property
     def subtotal(self):
-        return self.total - self.costo_envio
+        return self.total - self.costo_envio + self.descuento_aplicado
 
     def calcular_total(self):
-        """Recalcula el total sumando todos los ítems y el costo de envío."""
-        self.total = sum(item.subtotal() for item in self.items.all()) + self.costo_envio
+        """Recalcula el total sumando todos los ítems, costo de envío y aplicando descuento."""
+        self.total = sum(item.subtotal() for item in self.items.all()) + self.costo_envio - self.descuento_aplicado
+        if self.total < 0:
+            self.total = 0
         self.save(update_fields=['total'])
 
     @property

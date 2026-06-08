@@ -78,6 +78,16 @@
                             {% if orden.costo_envio == 0 %}Gratis{% else %}${{ orden.costo_envio|floatformat:2 }}{% endif %}
                         </td>
                     </tr>
+                    {% if orden.descuento_aplicado > 0 %}
+                    <tr>
+                        <td colspan="3" class="text-right font-semibold text-sm py-2 px-4 text-green-600">
+                            Descuento {% if orden.cupon %}({{ orden.cupon.codigo }}){% endif %}
+                        </td>
+                        <td class="text-right font-semibold text-sm text-green-600 py-2 px-4">
+                            -${{ orden.descuento_aplicado|floatformat:2 }}
+                        </td>
+                    </tr>
+                    {% endif %}
                     <tr>
                         <td colspan="3" class="text-right font-semibold text-sm py-3 px-4 border-t border-zinc-200">
                             Total
