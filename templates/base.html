@@ -146,6 +146,24 @@
         .reveal-stagger > *:nth-child(3) { transition-delay: 240ms; }
     </style>
 
+    <!-- Protección global de imágenes -->
+    <style>
+        img {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            user-drag: none;
+            -webkit-touch-callout: none;  /* iOS: evita menú largo-presión */
+            pointer-events: none;         /* bloquea clic derecho y arrastre */
+        }
+        /* Excepción: imágenes del panel admin y logos necesitan funcionar normal */
+        .panel-admin-img,
+        nav img,
+        footer img {
+            pointer-events: auto;
+        }
+    </style>
+
     {% block extra_head %}{% endblock %}
 </head>
 
@@ -387,6 +405,27 @@
 
 
     {% block extra_js %}{% endblock %}
+
+    <!-- ── Protección de imágenes ─────────────────────────────── -->
+    <script>
+        (function () {
+            // 1. Bloquear clic derecho SOLO en imágenes de producto
+            document.addEventListener('contextmenu', function (e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // 2. Bloquear arrastrar imágenes
+            document.addEventListener('dragstart', function (e) {
+                if (e.target.tagName === 'IMG') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        })();
+    </script>
 
 </body>
 
