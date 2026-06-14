@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
     # Apps propias
     'catalogo',
     'panel_admin',
@@ -136,6 +138,7 @@ MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+SITE_ID = 1
 
 # ── Autenticación ────────────────────────────────────────────────────────────
 LOGIN_URL           = '/auth/login/'

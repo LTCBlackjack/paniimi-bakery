@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /panel/
+Disallow: /carrito/
+Disallow: /mi-cuenta/
+Disallow: /auth/
+
+Sitemap: https://paniimibakery.com/sitemap.xml

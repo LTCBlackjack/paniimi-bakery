@@ -9,6 +9,17 @@
         content="{% block meta_description %}Panimii Bakery — Repostería artesanal especializada en roles y galletas. Horneado con paciencia.{% endblock %}">
     <title>{% block title %}Panimii Bakery{% endblock %}</title>
 
+    <!-- ── SEO & Open Graph (Redes Sociales) ── -->
+    <link rel="canonical" href="https://paniimibakery.com{{ request.path }}">
+    {% block og_tags %}
+    <meta property="og:title" content="Panimii Bakery — Repostería Artesanal">
+    <meta property="og:description" content="Repostería artesanal especializada en roles y galletas. Pedidos especiales y envíos en Mérida.">
+    <meta property="og:image" content="https://paniimibakery.com{% static 'img/home/hero_panimii.jpg' %}">
+    <meta property="og:url" content="https://paniimibakery.com{{ request.path }}">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    {% endblock %}
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{% static 'img/favicon_oso.png' %}?v=4">
 

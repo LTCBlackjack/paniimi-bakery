@@ -1,8 +1,17 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Catálogo — Panimii Bakery{% endblock %}
-{% block meta_description %}Explora nuestra colección de galletas artesanales y roles de canela. Horneado con paciencia en Paniimi Bakery.{% endblock %}
+{% block title %}{% if categoria_activa %}{{ categoria_activa.nombre }}{% else %}Catálogo{% endif %} — Panimii Bakery{% endblock %}
+{% block meta_description %}{% if categoria_activa and categoria_activa.descripcion %}{{ categoria_activa.descripcion }}{% else %}Explora nuestra colección de galletas artesanales y roles de canela. Horneado con paciencia en Paniimi Bakery.{% endif %}{% endblock %}
+
+{% block og_tags %}
+<meta property="og:title" content="{% if categoria_activa %}{{ categoria_activa.nombre }} — Panimii Bakery{% else %}Catálogo — Panimii Bakery{% endif %}">
+<meta property="og:description" content="{% if categoria_activa and categoria_activa.descripcion %}{{ categoria_activa.descripcion }}{% else %}Explora nuestra colección de repostería artesanal.{% endif %}">
+<meta property="og:image" content="https://paniimibakery.com{% static 'img/home/hero_panimii.jpg' %}">
+<meta property="og:url" content="https://paniimibakery.com{{ request.get_full_path }}">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+{% endblock %}
 
 {% block extra_head %}
 <style>

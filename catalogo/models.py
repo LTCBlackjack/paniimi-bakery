@@ -40,6 +40,10 @@ class Categoria(models.Model):
     def __str__(self):
         return self.nombre
 
+    def get_absolute_url(self):
+        from django.urls import reverse
+        return f"{reverse('catalogo:lista')}?categoria={self.slug}"
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.nombre)
