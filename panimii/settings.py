@@ -23,9 +23,9 @@ SECRET_KEY = os.environ['SECRET_KEY']
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-#ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1', '*').split(',')
-
-ALLOWED_HOSTS = ['*']
+# En producción (.env), define: ALLOWED_HOSTS=tupagina.com,www.tupagina.com
+# En local no hace falta definirla (usa localhost por defecto)
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 # ════════════════════════════════════════════════════════════════════════
 # APLICACIONES
 # ════════════════════════════════════════════════════════════════════════
@@ -182,4 +182,25 @@ EMAIL_DESTINATARIO = os.getenv('EMAIL_DESTINATARIO', EMAIL_HOST_USER)
 # ════════════════════════════════════════════════════════════════════════
 # ENTORNO TEMPORAL (trycloudflare)
 # ════════════════════════════════════════════════════════════════════════
-CSRF_TRUSTED_ORIGINS = ['https://*.trycloudflare.com']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.trycloudflare.com',
+    *[f'https://{h}' for h in os.getenv('ALLOWED_HOSTS', '').split(',') if h and h not in ('localhost', '127.0.0.1')],
+]
+
+
+# ════════════════════════════════════════════════════════════════════════
+# SEGURIDAD EN PRODUCCIÓN
+# Se activan automáticamente cuando DEBUG=False (en el servidor)
+# En local (DEBUG=True) no se aplican para no interrumpir el desarrollo.
+# ════════════════════════════════════════════════════════════════════════
+if not DEBUG:
+    # Fuerza HTTPS y protege las cookies
+    SECURE_SSL_REDIRECT         = True   # HTTP → HTTPS automático
+    SECURE_HSTS_SECONDS         = 31536000  # 1 año de HSTS
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD         = True
+    SESSION_COOKIE_SECURE       = True   # Cookie de sesión solo por HTTPS
+    CSRF_COOKIE_SECURE          = True   # Cookie CSRF solo por HTTPS
+    SECURE_BROWSER_XSS_FILTER   = True   # Bloquea XSS reflejado
+    SECURE_CONTENT_TYPE_NOSNIFF = True   # Evita MIME sniffing
+    X_FRAME_OPTIONS             = 'DENY' # Bloquea iframes (clickjacking)
