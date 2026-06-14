@@ -226,6 +226,22 @@ class ProductoForm(forms.ModelForm):
             raise ValidationError('El porcentaje de descuento debe estar entre 0 y 100.')
         return desc
 
+    def clean_imagen(self):
+        imagen = self.cleaned_data.get('imagen')
+        if imagen and hasattr(imagen, 'content_type'):
+            tipos_permitidos = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+            extensiones_permitidas = ['.jpg', '.jpeg', '.png', '.webp', '.gif']
+            import os
+            ext = os.path.splitext(imagen.name)[1].lower()
+            if imagen.content_type not in tipos_permitidos:
+                raise ValidationError('Solo se permiten imágenes JPEG, PNG, WebP o GIF.')
+            if ext not in extensiones_permitidas:
+                raise ValidationError('Extensión de archivo no permitida.')
+            # Límite de tamaño: 10 MB
+            if imagen.size > 10 * 1024 * 1024:
+                raise ValidationError('La imagen no puede superar los 10 MB.')
+        return imagen
+
 
 class CategoriaForm(forms.ModelForm):
     """Formulario para crear y editar categorías desde el panel admin."""

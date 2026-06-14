@@ -65,8 +65,23 @@ def contacto(request):
     """
     GET  → formulario vacío.
     POST → envía correo SMTP y redirige (PRG).
+    Rate limit: máximo 3 mensajes por IP en 10 minutos.
     """
     if request.method == 'POST':
+        # ── Rate limiting simple por IP ──────────────────────────
+        from django.core.cache import cache
+        ip  = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', 'unknown')).split(',')[0].strip()
+        cache_key = f'contacto_rate_{ip}'
+        intentos  = cache.get(cache_key, 0)
+        if intentos >= 3:
+            from django.shortcuts import render
+            form = ContactoForm()
+            return render(request, 'contacto.html', {
+                'form': form,
+                'error_rate': 'Has enviado demasiados mensajes. Por favor espera unos minutos antes de intentarlo de nuevo.',
+            })
+        cache.set(cache_key, intentos + 1, timeout=600)  # 10 minutos
+        # ─────────────────────────────────────────────────────────
         form = ContactoForm(request.POST)
         if form.is_valid():
             nombre  = form.cleaned_data['nombre']
@@ -353,7 +368,15 @@ def agregar_al_carrito(request, producto_id):
 
     request.session['carrito']  = carrito
     request.session.modified    = True
-    return redirect(request.META.get('HTTP_REFERER', 'catalogo:lista'))
+    # Redirigir de vuelta a la página anterior, pero solo si es del mismo sitio
+    referer = request.META.get('HTTP_REFERER', '')
+    if referer:
+        from urllib.parse import urlparse
+        parsed = urlparse(referer)
+        # Solo redirigir si es ruta interna (mismo host o sin host)
+        if not parsed.netloc or parsed.netloc == request.get_host():
+            return redirect(referer)
+    return redirect('catalogo:lista')
 
 
 def actualizar_carrito(request, producto_id):
@@ -471,14 +494,27 @@ def crear_orden_checkout(request):
     total         = Decimal('0.00')
     for key, datos in carrito_session.items():
         try:
-            precio   = Decimal(str(datos['precio']))
-            cantidad = int(datos['cantidad'])
+            producto_id = datos.get('producto_id', int(key.split('_')[0]))
+            tamano      = datos.get('tamano', '')
+            cantidad    = int(datos['cantidad'])
+
+            # Revalidar precio desde la BD (nunca confiar en la sesión)
+            from catalogo.models import Producto
+            try:
+                producto_obj = Producto.objects.get(pk=producto_id)
+                if tamano == 'grande' and producto_obj.precio_grande:
+                    precio = Decimal(str(producto_obj.precio_grande))
+                else:
+                    precio = Decimal(str(producto_obj.precio))
+            except Producto.DoesNotExist:
+                continue  # Producto eliminado, ignorar
+
             items_carrito.append({
-                'producto_id':    datos.get('producto_id', int(key.split('_')[0])),
-                'nombre':         datos['nombre'],
-                'precio':         precio,
-                'cantidad':       cantidad,
-                'tamano':         datos.get('tamano', ''),
+                'producto_id': producto_id,
+                'nombre':      producto_obj.nombre,
+                'precio':      precio,
+                'cantidad':    cantidad,
+                'tamano':      tamano,
             })
             total += precio * cantidad
         except (KeyError, ValueError):

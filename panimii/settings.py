@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     # Apps propias
     'catalogo',
     'panel_admin',
+    # Seguridad
+    'axes',
 ]
 
 MIDDLEWARE = [
@@ -47,6 +49,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'axes.middleware.AxesMiddleware',  # debe ir después de AuthenticationMiddleware
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'panimii.middleware.AdminKeyfileMiddleware',
@@ -140,9 +143,20 @@ LOGIN_REDIRECT_URL  = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 AUTHENTICATION_BACKENDS = [
+    'axes.backends.AxesStandaloneBackend',  # debe ir primero
     'panimii.backends.EmailOrUsernameModelBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+# ════════════════════════════════════════════════════════════════════════
+# DJANGO-AXES — Protección contra fuerza bruta en el login
+# Bloquea por IP después de 5 intentos fallidos durante 30 minutos
+# ════════════════════════════════════════════════════════════════════════
+AXES_FAILURE_LIMIT      = 5           # Bloquear tras 5 intentos fallidos
+AXES_COOLOFF_TIME       = 0.5         # Bloqueo de 30 minutos (0.5 horas)
+AXES_LOCKOUT_PARAMETERS = ['ip_address']  # Bloquear por IP
+AXES_RESET_ON_SUCCESS   = True        # Limpiar contador al hacer login exitoso
+AXES_LOCKOUT_TEMPLATE   = None        # Usa la respuesta HTTP 403 estándar
 
 # ── Stripe ───────────────────────────────────────────────────────────────────
 STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY', '')
@@ -183,7 +197,9 @@ EMAIL_DESTINATARIO = os.getenv('EMAIL_DESTINATARIO', EMAIL_HOST_USER)
 # ENTORNO TEMPORAL (trycloudflare)
 # ════════════════════════════════════════════════════════════════════════
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.trycloudflare.com',
+    # Solo en desarrollo con tunel Cloudflare
+    *(['https://*.trycloudflare.com'] if DEBUG else []),
+    # Dominio real de producción (tomado automáticamente de ALLOWED_HOSTS)
     *[f'https://{h}' for h in os.getenv('ALLOWED_HOSTS', '').split(',') if h and h not in ('localhost', '127.0.0.1')],
 ]
 

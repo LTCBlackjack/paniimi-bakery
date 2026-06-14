@@ -829,7 +829,7 @@ def diagnostico_email(request):
         'EMAIL_USE_TLS': getattr(settings, 'EMAIL_USE_TLS', 'No configurado'),
         'EMAIL_USE_SSL': getattr(settings, 'EMAIL_USE_SSL', 'No configurado'),
         'EMAIL_HOST_USER': getattr(settings, 'EMAIL_HOST_USER', 'No configurado'),
-        'EMAIL_HOST_PASSWORD': '****' + getattr(settings, 'EMAIL_HOST_PASSWORD', '')[-4:] if getattr(settings, 'EMAIL_HOST_PASSWORD', '') else 'VACÍO',
+        'EMAIL_HOST_PASSWORD': '********' if getattr(settings, 'EMAIL_HOST_PASSWORD', '') else 'VACÍ0',
         'DEFAULT_FROM_EMAIL': getattr(settings, 'DEFAULT_FROM_EMAIL', 'No configurado'),
     }
 

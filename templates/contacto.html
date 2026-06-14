@@ -77,6 +77,12 @@ interior de Yucatán.{% endblock %}
                 <form method="POST" action="{% url 'contacto' %}" novalidate class="space-y-5">
                     {% csrf_token %}
 
+                    {% if error_rate %}
+                    <div class="bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+                        {{ error_rate }}
+                    </div>
+                    {% endif %}
+
                     <!-- Campo: Nombre -->
                     <div>
                         <label for="{{ form.nombre.id_for_label }}"
